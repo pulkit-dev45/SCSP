@@ -1,0 +1,31 @@
+{% load static %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{% static "index.css" %}">
+    <title>Portal</title>
+</head>
+<body>
+    <div class="main">
+        <div class="upper-nav">
+            <img src="{% static "logo.jpeg" %}" alt="">
+        </div>
+        <div class="hero">
+            <div class="left-nav">
+                <div class="ul">
+                    <li><a href="{% url "dashboard" %}">Dashboard</a></li>
+                    <li><a href="{% url "upload" %}">Upload</a></li>
+                
+                    <li><a href="#">Download</a></li>
+                </div>
+            </div>
+            <div class="right-div">
+                {% block content %}
+                {% endblock content %}
+            </div>
+        </div>
+        </div>
+    </div>
+</body>
+</html>

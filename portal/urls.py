@@ -3,5 +3,6 @@ from django.urls import path
 from portal import views
 
 urlpatterns = [
-    path('',views.home,name="home"),
+    path('',views.dashboard,name="dashboard"),
+    path("/upload",views.upload,name="upload")
 ]
