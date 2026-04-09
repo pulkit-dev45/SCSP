@@ -40,78 +40,78 @@
     </div>
 
     <!-- Center Cards Section -->
-    <div class="row g-2" id="overviewCards">
+    <div class="row g-3" id="overviewCards" style="max-height: 70vh; overflow-y: auto; justify-content: center;">
         {% for center, stats in centers %}
-            <div class="col-md-4 col-lg-3 col-xl-2">
-                <div class="card border-0 shadow-sm rounded-2 overflow-hidden h-100" style="min-height: 280px;">
+            <div class="col-md-6 col-lg-4 col-xl-3">
+                <div class="card border-0 shadow-sm rounded-2 overflow-hidden h-100" style="min-height: 350px;">
                     <!-- Card Header -->
-                    <div style="background-color:#0e2238; padding: 0.75rem;">
-                        <h6 class="text-white fw-bold mb-1" style="font-size: 0.9rem;">{{ center }}</h6>
-                        <p class="text-white mb-0 small" style="opacity: 0.9;">
-                            <strong>Total:</strong> <span style="font-size: 1.1rem;">{{ stats.Total }}</span>
+                    <div style="background-color:#0e2238; padding: 1rem;">
+                        <h5 class="text-white fw-bold mb-2" style="font-size: 1.1rem;">{{ center }}</h5>
+                        <p class="text-white mb-0 small" style="opacity: 0.9; font-size: 0.9rem;">
+                            <strong>Total:</strong> <span style="font-size: 1.3rem;">{{ stats.Total }}</span>
                         </p>
                     </div>
 
                     <!-- Card Body -->
                     <div class="p-2">
                         <!-- Caste Stats -->
-                        <div class="row g-1 mb-2">
-                            <div class="col-6">
-                                <div class="text-center p-1 bg-light rounded-1">
-                                    <p class="text-muted x-small mb-0">GEN</p>
-                                    <h6 class="fw-bold text-dark mb-0 small">{{ stats.GENERAL }}</h6>
+                        <div class="row g-2 mb-3">
+                            <div class="col-4">
+                                <div class="text-center p-2 bg-light rounded-1">
+                                    <p class="text-muted x-small mb-1" style="font-size: 0.8rem;">GEN</p>
+                                    <h5 class="fw-bold text-dark mb-0" style="font-size: 1.2rem;">{{ stats.GENERAL }}</h5>
+                                </div>
+                            </div>
+                            <div class="col-4">
+                                <div class="text-center p-2 bg-light rounded-1">
+                                    <p class="text-muted x-small mb-1" style="font-size: 0.8rem;">SC</p>
+                                    <h5 class="fw-bold text-dark mb-0" style="font-size: 1.2rem;">{{ stats.SC }}</h5>
+                                </div>
+                            </div>
+                            <div class="col-4">
+                                <div class="text-center p-2 bg-light rounded-1">
+                                    <p class="text-muted x-small mb-1" style="font-size: 0.8rem;">ST</p>
+                                    <h5 class="fw-bold text-dark mb-0" style="font-size: 1.2rem;">{{ stats.ST }}</h5>
                                 </div>
                             </div>
                             <div class="col-6">
-                                <div class="text-center p-1 bg-light rounded-1">
-                                    <p class="text-muted x-small mb-0">SC</p>
-                                    <h6 class="fw-bold text-dark mb-0 small">{{ stats.SC }}</h6>
+                                <div class="text-center p-2 bg-light rounded-1">
+                                    <p class="text-muted x-small mb-1" style="font-size: 0.8rem;">OBC</p>
+                                    <h5 class="fw-bold text-dark mb-0" style="font-size: 1.2rem;">{{ stats.OBC }}</h5>
                                 </div>
                             </div>
                             <div class="col-6">
-                                <div class="text-center p-1 bg-light rounded-1">
-                                    <p class="text-muted x-small mb-0">ST</p>
-                                    <h6 class="fw-bold text-dark mb-0 small">{{ stats.ST }}</h6>
-                                </div>
-                            </div>
-                            <div class="col-6">
-                                <div class="text-center p-1 bg-light rounded-1">
-                                    <p class="text-muted x-small mb-0">OBC</p>
-                                    <h6 class="fw-bold text-dark mb-0 small">{{ stats.OBC }}</h6>
-                                </div>
-                            </div>
-                            <div class="col-12">
-                                <div class="text-center p-1 bg-light rounded-1">
-                                    <p class="text-muted x-small mb-0">PWD</p>
-                                    <h6 class="fw-bold text-dark mb-0 small">{{ stats.PWD }}</h6>
+                                <div class="text-center p-2 bg-light rounded-1">
+                                    <p class="text-muted x-small mb-1" style="font-size: 0.8rem;">PWD</p>
+                                    <h5 class="fw-bold text-dark mb-0" style="font-size: 1.2rem;">{{ stats.PWD }}</h5>
                                 </div>
                             </div>
                         </div>
 
                         <!-- Course Types -->
-                        <div class="row g-1">
-                            <div class="col-6">
-                                <div class="text-center p-1 bg-light rounded-1">
-                                    <p class="text-muted x-small mb-0">B Long</p>
-                                    <h6 class="fw-bold text-dark mb-0 small">{{ stats.B }}</h6>
+                        <div class="row g-2">
+                            <div class="col-3">
+                                <div class="text-center p-2 bg-light rounded-1">
+                                    <p class="text-muted x-small mb-1" style="font-size: 0.8rem;">B</p>
+                                    <h5 class="fw-bold text-dark mb-0" style="font-size: 1.2rem;">{{ stats.B }}</h5>
                                 </div>
                             </div>
-                            <div class="col-6">
-                                <div class="text-center p-1 bg-light rounded-1">
-                                    <p class="text-muted x-small mb-0">C Short</p>
-                                    <h6 class="fw-bold text-dark mb-0 small">{{ stats.C }}</h6>
+                            <div class="col-3">
+                                <div class="text-center p-2 bg-light rounded-1">
+                                    <p class="text-muted x-small mb-1" style="font-size: 0.8rem;">C</p>
+                                    <h5 class="fw-bold text-dark mb-0" style="font-size: 1.2rem;">{{ stats.C }}</h5>
                                 </div>
                             </div>
-                            <div class="col-6">
-                                <div class="text-center p-1 bg-light rounded-1">
-                                    <p class="text-muted x-small mb-0">D Short</p>
-                                    <h6 class="fw-bold text-dark mb-0 small">{{ stats.D }}</h6>
+                            <div class="col-3">
+                                <div class="text-center p-2 bg-light rounded-1">
+                                    <p class="text-muted x-small mb-1" style="font-size: 0.8rem;">D</p>
+                                    <h5 class="fw-bold text-dark mb-0" style="font-size: 1.2rem;">{{ stats.D }}</h5>
                                 </div>
                             </div>
-                            <div class="col-6">
-                                <div class="text-center p-1 bg-light rounded-1">
-                                    <p class="text-muted x-small mb-0">E DLC</p>
-                                    <h6 class="fw-bold text-dark mb-0 small">{{ stats.E }}</h6>
+                            <div class="col-3">
+                                <div class="text-center p-2 bg-light rounded-1">
+                                    <p class="text-muted x-small mb-1" style="font-size: 0.8rem;">E</p>
+                                    <h5 class="fw-bold text-dark mb-0" style="font-size: 1.2rem;">{{ stats.E }}</h5>
                                 </div>
                             </div>
                         </div>
@@ -140,70 +140,70 @@
 
         function renderCenterCard(center) {
             return `
-                <div class="col-md-4 col-lg-3 col-xl-2">
-                    <div class="card border-0 shadow-sm rounded-2 overflow-hidden h-100" style="min-height: 280px;">
-                        <div style="background-color: #0e2238; padding: 0.75rem;">
-                            <h6 class="text-white fw-bold mb-1" style="font-size: 0.9rem;">${center.name}</h6>
-                            <p class="text-white mb-0 small" style="opacity: 0.9;">
-                                <strong>Total:</strong> <span style="font-size: 1.1rem;">${center.stats.Total}</span>
+                <div class="col-md-6 col-lg-4 col-xl-3">
+                    <div class="card border-0 shadow-sm rounded-2 overflow-hidden h-100" style="min-height: 350px;">
+                        <div style="background-color: #0e2238; padding: 1rem;">
+                            <h5 class="text-white fw-bold mb-2" style="font-size: 1.1rem;">${center.name}</h5>
+                            <p class="text-white mb-0 small" style="opacity: 0.9; font-size: 0.9rem;">
+                                <strong>Total:</strong> <span style="font-size: 1.3rem;">${center.stats.Total}</span>
                             </p>
                         </div>
                         <div class="p-2">
-                            <div class="row g-1 mb-2">
-                                <div class="col-6">
-                                    <div class="text-center p-1 bg-light rounded-1">
-                                        <p class="text-muted x-small mb-0">GEN</p>
-                                        <h6 class="fw-bold text-dark mb-0 small">${center.stats.GENERAL}</h6>
+                            <div class="row g-2 mb-3">
+                                <div class="col-4">
+                                    <div class="text-center p-2 bg-light rounded-1">
+                                        <p class="text-muted x-small mb-1" style="font-size: 0.8rem;">GEN</p>
+                                        <h5 class="fw-bold text-dark mb-0" style="font-size: 1.2rem;">${center.stats.GENERAL}</h5>
+                                    </div>
+                                </div>
+                                <div class="col-4">
+                                    <div class="text-center p-2 bg-light rounded-1">
+                                        <p class="text-muted x-small mb-1" style="font-size: 0.8rem;">SC</p>
+                                        <h5 class="fw-bold text-dark mb-0" style="font-size: 1.2rem;">${center.stats.SC}</h5>
+                                    </div>
+                                </div>
+                                <div class="col-4">
+                                    <div class="text-center p-2 bg-light rounded-1">
+                                        <p class="text-muted x-small mb-1" style="font-size: 0.8rem;">ST</p>
+                                        <h5 class="fw-bold text-dark mb-0" style="font-size: 1.2rem;">${center.stats.ST}</h5>
                                     </div>
                                 </div>
                                 <div class="col-6">
-                                    <div class="text-center p-1 bg-light rounded-1">
-                                        <p class="text-muted x-small mb-0">SC</p>
-                                        <h6 class="fw-bold text-dark mb-0 small">${center.stats.SC}</h6>
+                                    <div class="text-center p-2 bg-light rounded-1">
+                                        <p class="text-muted x-small mb-1" style="font-size: 0.8rem;">OBC</p>
+                                        <h5 class="fw-bold text-dark mb-0" style="font-size: 1.2rem;">${center.stats.OBC}</h5>
                                     </div>
                                 </div>
                                 <div class="col-6">
-                                    <div class="text-center p-1 bg-light rounded-1">
-                                        <p class="text-muted x-small mb-0">ST</p>
-                                        <h6 class="fw-bold text-dark mb-0 small">${center.stats.ST}</h6>
-                                    </div>
-                                </div>
-                                <div class="col-6">
-                                    <div class="text-center p-1 bg-light rounded-1">
-                                        <p class="text-muted x-small mb-0">OBC</p>
-                                        <h6 class="fw-bold text-dark mb-0 small">${center.stats.OBC}</h6>
-                                    </div>
-                                </div>
-                                <div class="col-12">
-                                    <div class="text-center p-1 bg-light rounded-1">
-                                        <p class="text-muted x-small mb-0">PWD</p>
-                                        <h6 class="fw-bold text-dark mb-0 small">${center.stats.PWD}</h6>
+                                    <div class="text-center p-2 bg-light rounded-1">
+                                        <p class="text-muted x-small mb-1" style="font-size: 0.8rem;">PWD</p>
+                                        <h5 class="fw-bold text-dark mb-0" style="font-size: 1.2rem;">${center.stats.PWD}</h5>
                                     </div>
                                 </div>
                             </div>
-                            <div class="row g-1">
-                                <div class="col-6">
-                                    <div class="text-center p-1 bg-light rounded-1">
-                                        <p class="text-muted x-small mb-0">B Long</p>
-                                        <h6 class="fw-bold text-dark mb-0 small">${center.stats.B}</h6>
+                            <div class="row g-2">
+                                <div class="col-3">
+                                    <div class="text-center p-2 bg-light rounded-1">
+                                        <p class="text-muted x-small mb-1" style="font-size: 0.8rem;">B</p>
+                                        <h5 class="fw-bold text-dark mb-0" style="font-size: 1.2rem;">${center.stats.B}</h5>
                                     </div>
                                 </div>
-                                <div class="col-6">
-                                    <div class="text-center p-1 bg-light rounded-1">
-                                        <p class="text-muted x-small mb-0">C Short</p>
-                                        <h6 class="fw-bold text-dark mb-0 small">${center.stats.C}</h6>
+                                <div class="col-3">
+                                    <div class="text-center p-2 bg-light rounded-1">
+                                        <p class="text-muted x-small mb-1" style="font-size: 0.8rem;">C</p>
+                                        <h5 class="fw-bold text-dark mb-0" style="font-size: 1.2rem;">${center.stats.C}</h5>
                                     </div>
                                 </div>
-                                <div class="col-6">
-                                    <div class="text-center p-1 bg-light rounded-1">
-                                        <p class="text-muted x-small mb-0">D Short</p>
-                                        <h6 class="fw-bold text-dark mb-0 small">${center.stats.D}</h6>
+                                <div class="col-3">
+                                    <div class="text-center p-2 bg-light rounded-1">
+                                        <p class="text-muted x-small mb-1" style="font-size: 0.8rem;">D</p>
+                                        <h5 class="fw-bold text-dark mb-0" style="font-size: 1.2rem;">${center.stats.D}</h5>
                                     </div>
                                 </div>
-                                <div class="col-6">
-                                    <div class="text-center p-1 bg-light rounded-1">
-                                        <p class="text-muted x-small mb-0">E DLC</p>
-                                        <h6 class="fw-bold text-dark mb-0 small">${center.stats.E}</h6>
+                                <div class="col-3">
+                                    <div class="text-center p-2 bg-light rounded-1">
+                                        <p class="text-muted x-small mb-1" style="font-size: 0.8rem;">E</p>
+                                        <h5 class="fw-bold text-dark mb-0" style="font-size: 1.2rem;">${center.stats.E}</h5>
                                     </div>
                                 </div>
                             </div>

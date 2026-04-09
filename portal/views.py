@@ -291,7 +291,10 @@ def filter_students(request):
     if placed:
         students = students.filter(placed=(placed.lower() == 'true'))
     if claimed:
-        students = students.filter(claimed=(claimed.lower() == 'true'))
+        if claimed.lower() == 'true':
+            students = students.filter(claimed=True)
+        elif claimed.lower() == 'false':
+            students = students.filter(claimed=False)
     
 
     if scheme:
@@ -505,7 +508,10 @@ def download_filtered_data(request):
     if placed:
         students = students.filter(placed=(placed.lower() == 'true'))
     if claimed:
-        students = students.filter(claimed=(claimed.lower() == 'true'))
+        if claimed.lower() == 'true':
+            students = students.filter(claimed=True)
+        elif claimed.lower() == 'false':
+            students = students.filter(claimed=False)
 
     if scheme:
         students = students.filter(scheme__icontains=scheme)
@@ -612,7 +618,7 @@ def download_filtered_data(request):
         'Roll Number', 'Batch Code', 'Name', 'Father Name', 'Mother Name', 'DOB', 'Gender', 'Address',
         'Qualifications', 'Aadhaar', 'Course Name', 'Scheme', 'NSQF', 'Course Hours', 'Course Category',
         'Center', 'Mode', 'Caste Category', 'Fee', 'Claimable Amount', 'Fee Date', 'Trained',
-        'Trained Date', 'Certified', 'Certified Date', 'Placed', 'Session'
+        'Trained Date', 'Certified', 'Certified Date', 'Placed', 'Claimed', 'Session'
     ]
     for col_num, header in enumerate(headers, 1):
         cell = ws.cell(row=1, column=col_num, value=header)
@@ -646,7 +652,8 @@ def download_filtered_data(request):
         ws.cell(row=row_num, column=24, value='Yes' if student.certified else 'No')
         ws.cell(row=row_num, column=25, value=student.certified_date)
         ws.cell(row=row_num, column=26, value='Yes' if student.placed else 'No')
-        ws.cell(row=row_num, column=27, value=student.session)
+        ws.cell(row=row_num, column=27, value='Yes' if student.claimed else 'No')
+        ws.cell(row=row_num, column=28, value=student.session)
 
     for column in ws.columns:
         max_length = 0

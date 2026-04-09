@@ -574,7 +574,7 @@ function getCookie(name) {
 
 function clearFilters() {
     ["centerFilter","modeFilter","casteFilter","trainedFilter",
-     "certifiedFilter","placedFilter","schemeFilter","nsqfFilter","quarterlyFilter","yearFilter", "searchInput"]
+     "certifiedFilter","placedFilter","claimedFilter","schemeFilter","nsqfFilter","quarterlyFilter","yearFilter", "searchInput"]
         .forEach(id => document.getElementById(id).value = "");
     currentPage = 1;
     currentLimit = 10;
@@ -582,7 +582,7 @@ function clearFilters() {
 }
 
 ["centerFilter","modeFilter","casteFilter","trainedFilter",
- "certifiedFilter","placedFilter","schemeFilter","nsqfFilter","quarterlyFilter","yearFilter"]
+ "certifiedFilter","placedFilter","claimedFilter","schemeFilter","nsqfFilter","quarterlyFilter","yearFilter"]
     .forEach(id => document.getElementById(id).addEventListener("change", () => {
         currentPage = 1; // Reset to first page when filters change
         filterStudents();
@@ -634,7 +634,7 @@ document.getElementById("searchInput").addEventListener("input", function() {
 });
 function clearFilters() {
     ["centerFilter","modeFilter","casteFilter","trainedFilter",
-     "certifiedFilter","placedFilter","schemeFilter","nsqfFilter","quarterlyFilter","yearFilter", "searchInput"]
+     "certifiedFilter","placedFilter","claimedFilter","schemeFilter","nsqfFilter","quarterlyFilter","yearFilter", "searchInput"]
         .forEach(id => document.getElementById(id).value = "");
     filterStudents();
 }
