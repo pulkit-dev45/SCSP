@@ -1,47 +1,48 @@
-{% extends "base.html" %}
-
-{% block content %}
+{% extends "base.html" %} {% block content %}
 <style>
     th {
-    cursor: pointer;
-    user-select: none;
-}
+        cursor: pointer;
+        user-select: none;
+    }
 
-th:hover {
-    background-color: rgb(0, 0, 0);
-}
+    th:hover {
+        background-color: rgb(0, 0, 0);
+    }
 
-.pagination-btn {
-    padding: 8px 16px;
-    background: var(--blue);
-    color: #fff;
-    border: none;
-    border-radius: 6px;
-    font-family: var(--sans);
-    font-size: 13px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: background 0.15s, transform 0.12s, box-shadow 0.15s;
-    box-shadow: 0 2px 6px rgba(26,111,196,0.22);
-    margin: 0 5px;
-}
+    .pagination-btn {
+        padding: 8px 16px;
+        background: var(--blue);
+        color: #fff;
+        border: none;
+        border-radius: 6px;
+        font-family: var(--sans);
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+        transition:
+            background 0.15s,
+            transform 0.12s,
+            box-shadow 0.15s;
+        box-shadow: 0 2px 6px rgba(26, 111, 196, 0.22);
+        margin: 0 5px;
+    }
 
-.pagination-btn:hover:not(:disabled) {
-    background: var(--blue-light);
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(26,111,196,0.3);
-}
+    .pagination-btn:hover:not(:disabled) {
+        background: var(--blue-light);
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(26, 111, 196, 0.3);
+    }
 
-.pagination-btn:active:not(:disabled) {
-    transform: translateY(0);
-}
+    .pagination-btn:active:not(:disabled) {
+        transform: translateY(0);
+    }
 
-.pagination-btn:disabled {
-    background: var(--text-muted);
-    cursor: not-allowed;
-    box-shadow: none;
-    transform: none;
-}
+    .pagination-btn:disabled {
+        background: var(--text-muted);
+        cursor: not-allowed;
+        box-shadow: none;
+        transform: none;
+    }
 </style>
 <h2>Student Dashboard</h2>
 
@@ -98,14 +99,10 @@ th:hover {
     </select>
     <select id="quarterlyFilter">
         <option value="">All Quarterly</option>
-        <option value="Q1-trained">Q1 - Trained</option>
-        <option value="Q1-certified">Q1 - Certified</option>
-        <option value="Q2-trained">Q2 - Trained</option>
-        <option value="Q2-certified">Q2 - Certified</option>
-        <option value="Q3-trained">Q3 - Trained</option>
-        <option value="Q3-certified">Q3 - Certified</option>
-        <option value="Q4-trained">Q4 - Trained</option>
-        <option value="Q4-certified">Q4 - Certified</option>
+        <option value="Q1">Q1</option>
+        <option value="Q2">Q2</option>
+        <option value="Q3">Q3</option>
+        <option value="Q4">Q4</option>
     </select>
     <select id="yearFilter">
         <option value="">All Years</option>
@@ -119,62 +116,156 @@ th:hover {
         <option value="2027">2027</option>
         <option value="2028">2028</option>
     </select>
-    <div style="display:flex;">
-    <button onclick="clearFilters()" class="clear-btn" style="margin-right:95px;">Clear</button>
-    
-    <input type="text" id="searchInput" placeholder="Search Name or Roll No..." class="minput" style="width: 300px; display: inline-block;margin-right:10px;">
-    <button onclick="clearFilters()" class="clear-btn" style="background-color:blue;">Find</button>
-    
-    <button onclick="downloadFilteredData()" class="clear-btn" style="background-color:green;margin-left:10px;">Download Excel</button>
+    <div style="display: flex">
+        <button
+            onclick="clearFilters()"
+            class="clear-btn"
+            style="margin-right: 95px"
+        >
+            Clear
+        </button>
+
+        <input
+            type="text"
+            id="searchInput"
+            placeholder="Search Name or Roll No..."
+            class="minput"
+            style="width: 300px; display: inline-block; margin-right: 10px"
+        />
+        <button
+            onclick="clearFilters()"
+            class="clear-btn"
+            style="background-color: blue"
+        >
+            Find
+        </button>
+
+        <button
+            onclick="downloadFilteredData()"
+            class="clear-btn"
+            style="background-color: green; margin-left: 10px"
+        >
+            Download Excel
+        </button>
     </div>
 </div>
 
-<div style="overflow-x: auto;">
+<div style="overflow-x: auto">
     <table>
         <thead>
             <tr>
-
-    <th onclick="sortTable('roll_number')">Roll No <span id="sort-roll_number"></span></th>
-    <th onclick="sortTable('batch_code')">Batch Code <span id="sort-batch_code"></span></th>
-    <th onclick="sortTable('name')">Name <span id="sort-name"></span></th>
-    <th onclick="sortTable('course_name')">Course <span id="sort-course_name"></span></th>
-    <th onclick="sortTable('father_name')">Father <span id="sort-father_name"></span></th>
-    <th onclick="sortTable('mother_name')">Mother <span id="sort-mother_name"></span></th>
-    <th onclick="sortTable('dob')">DOB <span id="sort-dob"></span></th>
-    <th onclick="sortTable('gender')">Gender <span id="sort-gender"></span></th>
-    <th onclick="sortTable('address')">Address <span id="sort-address"></span></th>
-    <th onclick="sortTable('qualifications')">Qualifications <span id="sort-qualifications"></span></th>
-    <th onclick="sortTable('aadhaar')">Aadhaar <span id="sort-aadhaar"></span></th>
-    <th onclick="sortTable('scheme')">Scheme <span id="sort-scheme"></span></th>
-    <th onclick="sortTable('nsqf')">NSQF <span id="sort-nsqf"></span></th>
-    <th onclick="sortTable('course_hour')">Hours <span id="sort-course_hour"></span></th>
-    <th onclick="sortTable('course_category')">Category <span id="sort-course_category"></span></th>
-    <th onclick="sortTable('center_name')">Center <span id="sort-center_name"></span></th>
-    <th onclick="sortTable('mode')">Mode <span id="sort-mode"></span></th>
-    <th onclick="sortTable('caste_category')">Caste <span id="sort-caste_category"></span></th>
-    <th onclick="sortTable('fee')">Fee <span id="sort-fee"></span></th>
-    <th onclick="sortTable('claimable_amount')">Claimable <span id="sort-claimable_amount"></span></th>
-    <th onclick="sortTable('fee_date')">Fee Date <span id="sort-fee_date"></span></th>
-    <th onclick="sortTable('trained')">Trained <span id="sort-trained"></span></th>
-    <th onclick="sortTable('certified')">Certified <span id="sort-certified"></span></th>
-    <th onclick="sortTable('placed')">Placed <span id="sort-placed"></span></th>
-    <th onclick="sortTable('session')">Session <span id="sort-session"></span></th>
-    <th>Edit</th>
-    <th onclick="sortTable('claimed')">Claimed <span id="sort-claimed"></span></th>
+                <th onclick="sortTable('roll_number')">
+                    Roll No <span id="sort-roll_number"></span>
+                </th>
+                <th onclick="sortTable('batch_code')">
+                    Batch Code <span id="sort-batch_code"></span>
+                </th>
+                <th onclick="sortTable('name')">
+                    Name <span id="sort-name"></span>
+                </th>
+                <th onclick="sortTable('course_name')">
+                    Course <span id="sort-course_name"></span>
+                </th>
+                <th onclick="sortTable('father_name')">
+                    Father <span id="sort-father_name"></span>
+                </th>
+                <th onclick="sortTable('mother_name')">
+                    Mother <span id="sort-mother_name"></span>
+                </th>
+                <th onclick="sortTable('dob')">
+                    DOB <span id="sort-dob"></span>
+                </th>
+                <th onclick="sortTable('gender')">
+                    Gender <span id="sort-gender"></span>
+                </th>
+                <th onclick="sortTable('address')">
+                    Address <span id="sort-address"></span>
+                </th>
+                <th onclick="sortTable('qualifications')">
+                    Qualifications <span id="sort-qualifications"></span>
+                </th>
+                <th onclick="sortTable('aadhaar')">
+                    Aadhaar <span id="sort-aadhaar"></span>
+                </th>
+                <th onclick="sortTable('scheme')">
+                    Scheme <span id="sort-scheme"></span>
+                </th>
+                <th onclick="sortTable('nsqf')">
+                    NSQF <span id="sort-nsqf"></span>
+                </th>
+                <th onclick="sortTable('course_hour')">
+                    Hours <span id="sort-course_hour"></span>
+                </th>
+                <th onclick="sortTable('course_category')">
+                    Category <span id="sort-course_category"></span>
+                </th>
+                <th onclick="sortTable('center_name')">
+                    Center <span id="sort-center_name"></span>
+                </th>
+                <th onclick="sortTable('mode')">
+                    Mode <span id="sort-mode"></span>
+                </th>
+                <th onclick="sortTable('caste_category')">
+                    Caste <span id="sort-caste_category"></span>
+                </th>
+                <th onclick="sortTable('fee')">
+                    Fee <span id="sort-fee"></span>
+                </th>
+                <th onclick="sortTable('claimable_amount')">
+                    Claimable <span id="sort-claimable_amount"></span>
+                </th>
+                <th onclick="sortTable('fee_date')">
+                    Fee Date <span id="sort-fee_date"></span>
+                </th>
+                <th onclick="sortTable('trained')">
+                    Trained <span id="sort-trained"></span>
+                </th>
+                <th onclick="sortTable('certified')">
+                    Certified <span id="sort-certified"></span>
+                </th>
+                <th onclick="sortTable('placed')">
+                    Placed <span id="sort-placed"></span>
+                </th>
+                <th onclick="sortTable('session')">
+                    Session <span id="sort-session"></span>
+                </th>
+                <th>Edit</th>
+                <th onclick="sortTable('claimed')">
+                    Claimed <span id="sort-claimed"></span>
+                </th>
             </tr>
         </thead>
         <tbody id="results">
-            <tr><td colspan="26" style="text-align:center;">Loading...</td></tr>
+            <tr>
+                <td colspan="26" style="text-align: center">Loading...</td>
+            </tr>
         </tbody>
     </table>
 </div>
 
 <!-- Pagination Controls -->
-<div id="pagination" style="display: none; text-align: center; margin-top: 20px;">
-    <button id="prevBtn" onclick="changePage(currentPage - 1)" disabled class="pagination-btn">Previous</button>
-    <span id="pageInfo" style="margin: 0 20px;">Page 1 of 1</span>
-    <button id="nextBtn" onclick="changePage(currentPage + 1)" disabled class="pagination-btn">Next</button>
-    <div style="margin-top: 10px;">
+<div
+    id="pagination"
+    style="display: none; text-align: center; margin-top: 20px"
+>
+    <button
+        id="prevBtn"
+        onclick="changePage(currentPage - 1)"
+        disabled
+        class="pagination-btn"
+    >
+        Previous
+    </button>
+    <span id="pageInfo" style="margin: 0 20px">Page 1 of 1</span>
+    <button
+        id="nextBtn"
+        onclick="changePage(currentPage + 1)"
+        disabled
+        class="pagination-btn"
+    >
+        Next
+    </button>
+    <div style="margin-top: 10px">
         <label>Records per page:</label>
         <select id="limitSelect" onchange="changeLimit(this.value)">
             <option value="10">10</option>
@@ -186,9 +277,20 @@ th:hover {
 </div>
 
 <!-- Edit Modal -->
-<div id="editModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.52);z-index:999;align-items:center;justify-content:center;padding:20px;">
+<div
+    id="editModal"
+    style="
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.52);
+        z-index: 999;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+    "
+>
     <div class="modal-box">
-
         <div class="modal-header">
             <div>
                 <div class="modal-header-label">Editing record</div>
@@ -199,20 +301,80 @@ th:hover {
         </div>
 
         <div class="modal-body">
-            <div class="mfield"><label>Name</label><input id="m_name" class="minput"></div>
-            <div class="mfield"><label>Batch Code</label><input id="m_batch_code" class="minput" style="text-transform: uppercase;"></div>
-            <div class="mfield"><label>Father name</label><input id="m_father_name" class="minput"></div>
-            <div class="mfield"><label>Mother name</label><input id="m_mother_name" class="minput"></div>
-            <div class="mfield"><label>DOB</label><input id="m_dob" class="minput" type="date"></div>
-            <div class="mfield"><label>Gender</label><select id="m_gender" class="minput"><option value="Male">Male</option><option value="Female">Female</option></select></div>
-            <div class="mfield"><label>Address</label><input id="m_address" class="minput"></div>
-            <div class="mfield"><label>Qualifications</label><input id="m_qualifications" class="minput"></div>
-            <div class="mfield"><label>Aadhaar</label><input id="m_aadhaar" class="minput" maxlength="12" pattern="\d*"></div>
-            <div class="mfield"><label>Course name</label><input id="m_course_name" class="minput"></div>
-            <div class="mfield"><label>Scheme</label><input id="m_scheme" class="minput"></div>
-            <div class="mfield"><label>NSQF level</label><input id="m_nsqf" class="minput" placeholder="e.g. Level 4 — blank if Non-NSQF"></div>
-            <div class="mfield"><label>Course hours</label><input id="m_course_hour" class="minput" type="number" min="1"></div>
-            <div class="mfield"><label>Fee (₹)</label><input id="m_fee" class="minput" type="number" min="0"></div>
+            <div class="mfield">
+                <label>Name</label><input id="m_name" class="minput" />
+            </div>
+            <div class="mfield">
+                <label>Batch Code</label
+                ><input
+                    id="m_batch_code"
+                    class="minput"
+                    style="text-transform: uppercase"
+                />
+            </div>
+            <div class="mfield">
+                <label>Father name</label
+                ><input id="m_father_name" class="minput" />
+            </div>
+            <div class="mfield">
+                <label>Mother name</label
+                ><input id="m_mother_name" class="minput" />
+            </div>
+            <div class="mfield">
+                <label>DOB</label
+                ><input id="m_dob" class="minput" type="date" />
+            </div>
+            <div class="mfield">
+                <label>Gender</label
+                ><select id="m_gender" class="minput">
+                    <option value="Male">Male</option>
+                    <option value="Female">Female</option>
+                </select>
+            </div>
+            <div class="mfield">
+                <label>Address</label><input id="m_address" class="minput" />
+            </div>
+            <div class="mfield">
+                <label>Qualifications</label
+                ><input id="m_qualifications" class="minput" />
+            </div>
+            <div class="mfield">
+                <label>Aadhaar</label
+                ><input
+                    id="m_aadhaar"
+                    class="minput"
+                    maxlength="12"
+                    pattern="\d*"
+                />
+            </div>
+            <div class="mfield">
+                <label>Course name</label
+                ><input id="m_course_name" class="minput" />
+            </div>
+            <div class="mfield">
+                <label>Scheme</label><input id="m_scheme" class="minput" />
+            </div>
+            <div class="mfield">
+                <label>NSQF level</label
+                ><input
+                    id="m_nsqf"
+                    class="minput"
+                    placeholder="e.g. Level 4 — blank if Non-NSQF"
+                />
+            </div>
+            <div class="mfield">
+                <label>Course hours</label
+                ><input
+                    id="m_course_hour"
+                    class="minput"
+                    type="number"
+                    min="1"
+                />
+            </div>
+            <div class="mfield">
+                <label>Fee (₹)</label
+                ><input id="m_fee" class="minput" type="number" min="0" />
+            </div>
             <div class="mfield">
                 <label>Center</label>
                 <select id="m_center" class="minput">
@@ -238,10 +400,13 @@ th:hover {
                     <option value="PWD">PWD</option>
                 </select>
             </div>
-            <div class="mfield"><label>Fee Date</label><input id="m_fee_date" class="minput" type="date"></div>
+            <div class="mfield">
+                <label>Fee Date</label
+                ><input id="m_fee_date" class="minput" type="date" />
+            </div>
             <div class="mfield">
                 <label>Session (Month/Year)</label>
-                <div style="display: flex; gap: 10px;">
+                <div style="display: flex; gap: 10px">
                     <select id="m_session_month" class="minput">
                         <option value="">Month</option>
                         <option value="JAN">JAN</option>
@@ -272,20 +437,29 @@ th:hover {
                         <option value="2030">2030</option>
                     </select>
                 </div>
-                <input id="m_session" class="minput" style="display:none;" placeholder="JAN-2024">
+                <input
+                    id="m_session"
+                    class="minput"
+                    style="display: none"
+                    placeholder="JAN-2024"
+                />
             </div>
             <div class="mfield">
                 <label>Trained</label>
                 <select id="m_trained" class="minput">
                     <option value="false">No</option>
-                    <option value="true">Yes — date auto-set to current month</option>
+                    <option value="true">
+                        Yes — date auto-set to current month
+                    </option>
                 </select>
             </div>
             <div class="mfield">
                 <label>Certified</label>
                 <select id="m_certified" class="minput">
                     <option value="false">No</option>
-                    <option value="true">Yes — date auto-set to current month</option>
+                    <option value="true">
+                        Yes — date auto-set to current month
+                    </option>
                 </select>
             </div>
             <div class="mfield">
@@ -309,127 +483,131 @@ th:hover {
         </div>
 
         <div class="modal-footer">
-            <button onclick="closeEditModal()" class="btn-secondary btn">Cancel</button>
-            <button onclick="saveModal()" class="btn-primary btn">Save changes</button>
+            <button onclick="closeEditModal()" class="btn-secondary btn">
+                Cancel
+            </button>
+            <button onclick="saveModal()" class="btn-primary btn">
+                Save changes
+            </button>
         </div>
-
     </div>
 </div>
 
 <script>
-let currentData  = [];
-let currentPage = 1;
-let currentLimit = 10;
-let currentPagination = null;
+    let currentData = [];
+    let currentPage = 1;
+    let currentLimit = 10;
+    let currentPagination = null;
 
-function filterStudents() {
-    const center    = document.getElementById("centerFilter").value;
-    const mode      = document.getElementById("modeFilter").value;
-    const caste     = document.getElementById("casteFilter").value;
-    const trained   = document.getElementById("trainedFilter").value;
-    const certified = document.getElementById("certifiedFilter").value;
-    const placed    = document.getElementById("placedFilter").value;
-    const claimed   = document.getElementById("claimedFilter").value;
-    const scheme    = document.getElementById("schemeFilter").value;
-    const nsqf      = document.getElementById("nsqfFilter").value;
-    const quarterly = document.getElementById("quarterlyFilter").value;
-    const year      = document.getElementById("yearFilter").value;
+    function filterStudents() {
+        const center = document.getElementById("centerFilter").value;
+        const mode = document.getElementById("modeFilter").value;
+        const caste = document.getElementById("casteFilter").value;
+        const trained = document.getElementById("trainedFilter").value;
+        const certified = document.getElementById("certifiedFilter").value;
+        const placed = document.getElementById("placedFilter").value;
+        const claimed = document.getElementById("claimedFilter").value;
+        const scheme = document.getElementById("schemeFilter").value;
+        const nsqf = document.getElementById("nsqfFilter").value;
+        const quarterly = document.getElementById("quarterlyFilter").value;
+        const year = document.getElementById("yearFilter").value;
 
-    const sortOrder = sortAsc ? 'asc' : 'desc';
+        const sortOrder = sortAsc ? "asc" : "desc";
 
-    const url = `/filter-students/?center=${center}&mode=${mode}&caste=${caste}&trained=${trained}&certified=${certified}&placed=${placed}&claimed=${claimed}&scheme=${scheme}&nsqf=${nsqf}&quarterly=${quarterly}&year=${year}&page=${currentPage}&limit=${currentLimit}&sort_field=${sortField || ''}&sort_order=${sortOrder}`;
+        const url = `/filter-students/?center=${center}&mode=${mode}&caste=${caste}&trained=${trained}&certified=${certified}&placed=${placed}&claimed=${claimed}&scheme=${scheme}&nsqf=${nsqf}&quarterly=${quarterly}&year=${year}&page=${currentPage}&limit=${currentLimit}&sort_field=${sortField || ""}&sort_order=${sortOrder}`;
 
-    fetch(url)
-        .then(res => res.json())
-        .then(data => {
-            currentData = data.results;
-            currentPagination = data.pagination;
-            renderTable(currentData);
-            renderPagination(currentPagination);
-        })
-        .catch(err => {
-            console.error('Error:', err);
-            document.getElementById("results").innerHTML =
-                `<tr><td colspan="26" style="text-align:center;color:red;">Error loading data</td></tr>`;
-        });
-}
-
-function renderPagination(pagination) {
-    const paginationDiv = document.getElementById("pagination");
-    if (pagination.total_pages > 1) {
-        paginationDiv.style.display = "block";
-        document.getElementById("pageInfo").textContent = `Page ${pagination.page} of ${pagination.total_pages}`;
-        document.getElementById("prevBtn").disabled = !pagination.has_prev;
-        document.getElementById("nextBtn").disabled = !pagination.has_next;
-        document.getElementById("limitSelect").value = pagination.limit;
-    } else {
-        paginationDiv.style.display = "none";
+        fetch(url)
+            .then((res) => res.json())
+            .then((data) => {
+                currentData = data.results;
+                currentPagination = data.pagination;
+                renderTable(currentData);
+                renderPagination(currentPagination);
+            })
+            .catch((err) => {
+                console.error("Error:", err);
+                document.getElementById("results").innerHTML =
+                    `<tr><td colspan="26" style="text-align:center;color:red;">Error loading data</td></tr>`;
+            });
     }
-}
 
-function changePage(page) {
-    currentPage = page;
-    filterStudents();
-}
-
-function changeLimit(limit) {
-    currentLimit = parseInt(limit);
-    currentPage = 1; // Reset to first page when changing limit
-    filterStudents();
-}
-
-function downloadFilteredData() {
-    const center    = document.getElementById("centerFilter").value;
-    const mode      = document.getElementById("modeFilter").value;
-    const caste     = document.getElementById("casteFilter").value;
-    const trained   = document.getElementById("trainedFilter").value;
-    const certified = document.getElementById("certifiedFilter").value;
-    const placed    = document.getElementById("placedFilter").value;
-    const claimed   = document.getElementById("claimedFilter").value;
-    const scheme    = document.getElementById("schemeFilter").value;
-    const nsqf      = document.getElementById("nsqfFilter").value;
-    const quarterly = document.getElementById("quarterlyFilter").value;
-    const year      = document.getElementById("yearFilter").value;
-    const sortOrder = sortAsc ? 'asc' : 'desc';
-
-    const url = `/download-filtered-data/?center=${center}&mode=${mode}&caste=${caste}&trained=${trained}&certified=${certified}&placed=${placed}&claimed=${claimed}&scheme=${scheme}&nsqf=${nsqf}&quarterly=${quarterly}&year=${year}&sort_field=${sortField || ''}&sort_order=${sortOrder}`;
-    
-    window.open(url, '_blank');
-}
-
-function renderTable(data) {
-    const tbody = document.getElementById("results");
-    if (!data.length) {
-        tbody.innerHTML = `<tr><td colspan="25" style="text-align:center;">No students found</td></tr>`;
-        return;
+    function renderPagination(pagination) {
+        const paginationDiv = document.getElementById("pagination");
+        if (pagination.total_pages > 1) {
+            paginationDiv.style.display = "block";
+            document.getElementById("pageInfo").textContent =
+                `Page ${pagination.page} of ${pagination.total_pages}`;
+            document.getElementById("prevBtn").disabled = !pagination.has_prev;
+            document.getElementById("nextBtn").disabled = !pagination.has_next;
+            document.getElementById("limitSelect").value = pagination.limit;
+        } else {
+            paginationDiv.style.display = "none";
+        }
     }
-    tbody.innerHTML = data.map((s, i) => displayRow(s, i)).join('');
-}
 
-function displayRow(s, i) {
-    const trainedBadge = s.trained
-        ? `<span class="badge-yes">Yes</span><small>${s.trained_date || ''}</small>`
-        : `<span class="badge-no">No</span>`;
-    const certifiedBadge = s.certified
-        ? `<span class="badge-yes">Yes</span><small>${s.certified_date || ''}</small>`
-        : `<span class="badge-no">No</span>`;
-    const placedBadge = s.placed
-        ? `<span class="badge-yes">Yes</span>`
-        : `<span class="badge-no">No</span>`;
+    function changePage(page) {
+        currentPage = page;
+        filterStudents();
+    }
 
-    return `<tr id="row-${i}" data-id="${s.id}">
-        <td>${s.roll_number || '-'}</td>
-        <td>${(s.batch_code || '').toUpperCase() || '-'}</td>
+    function changeLimit(limit) {
+        currentLimit = parseInt(limit);
+        currentPage = 1; // Reset to first page when changing limit
+        filterStudents();
+    }
+
+    function downloadFilteredData() {
+        const center = document.getElementById("centerFilter").value;
+        const mode = document.getElementById("modeFilter").value;
+        const caste = document.getElementById("casteFilter").value;
+        const trained = document.getElementById("trainedFilter").value;
+        const certified = document.getElementById("certifiedFilter").value;
+        const placed = document.getElementById("placedFilter").value;
+        const claimed = document.getElementById("claimedFilter").value;
+        const scheme = document.getElementById("schemeFilter").value;
+        const nsqf = document.getElementById("nsqfFilter").value;
+        const quarterly = document.getElementById("quarterlyFilter").value;
+        const year = document.getElementById("yearFilter").value;
+        const sortOrder = sortAsc ? "asc" : "desc";
+
+        const url = `/download-filtered-data/?center=${center}&mode=${mode}&caste=${caste}&trained=${trained}&certified=${certified}&placed=${placed}&claimed=${claimed}&scheme=${scheme}&nsqf=${nsqf}&quarterly=${quarterly}&year=${year}&sort_field=${sortField || ""}&sort_order=${sortOrder}`;
+
+        window.open(url, "_blank");
+    }
+
+    function renderTable(data) {
+        const tbody = document.getElementById("results");
+        if (!data.length) {
+            tbody.innerHTML = `<tr><td colspan="25" style="text-align:center;">No students found</td></tr>`;
+            return;
+        }
+        tbody.innerHTML = data.map((s, i) => displayRow(s, i)).join("");
+    }
+
+    function displayRow(s, i) {
+        const trainedBadge = s.trained
+            ? `<span class="badge-yes">Yes</span><small>${s.trained_date || ""}</small>`
+            : `<span class="badge-no">No</span>`;
+        const certifiedBadge = s.certified
+            ? `<span class="badge-yes">Yes</span><small>${s.certified_date || ""}</small>`
+            : `<span class="badge-no">No</span>`;
+        const placedBadge = s.placed
+            ? `<span class="badge-yes">Yes</span>`
+            : `<span class="badge-no">No</span>`;
+
+        return `<tr id="row-${i}" data-id="${s.id}">
+        <td>${s.roll_number || "-"}</td>
+        <td>${(s.batch_code || "").toUpperCase() || "-"}</td>
         <td>${s.name}</td>
         <td>${s.course_name}</td>
-        <td>${s.father_name || '-'}</td>
-        <td>${s.mother_name || '-'}</td>
-        <td>${s.dob || '-'}</td>
-        <td>${s.gender || '-'}</td>
-        <td>${s.address || '-'}</td>
-        <td>${s.qualifications || '-'}</td>
-        <td>${s.aadhaar || '-'}</td>
-        <td>${s.scheme || '-'}</td>
+        <td>${s.father_name || "-"}</td>
+        <td>${s.mother_name || "-"}</td>
+        <td>${s.dob || "-"}</td>
+        <td>${s.gender || "-"}</td>
+        <td>${s.address || "-"}</td>
+        <td>${s.qualifications || "-"}</td>
+        <td>${s.aadhaar || "-"}</td>
+        <td>${s.scheme || "-"}</td>
         <td>${s.nsqf || '<span class="badge-no">Non NSQF</span>'}</td>
         <td>${s.course_hour}</td>
         <td>${s.course_category}</td>
@@ -438,206 +616,269 @@ function displayRow(s, i) {
         <td>${s.caste_category}</td>
         <td>₹${s.fee}</td>
         <td>₹${s.claimable_amount}</td>
-        <td>${s.fee_date || '-'}</td>
+        <td>${s.fee_date || "-"}</td>
         <td>${trainedBadge}</td>
         <td>${certifiedBadge}</td>
         <td>${placedBadge}</td>
         <td>${s.session}</td>
         <td><button class="edit-btn" onclick="openEditModal(${i})">Edit</button></td>
-        <td>${s.claimed ? '<span class="badge-yes">Claimed</span>' : '<span class="badge-no">Not claimed</span>'}</td> 
+        <td>${s.claimed ? '<span class="badge-yes">Claimed</span>' : '<span class="badge-no">Not claimed</span>'}</td>
         </tr>`;
-}
-
-function openEditModal(i) {
-    editingIndex = i;
-    const s = currentData[i];
-
-    document.getElementById('modal-title').textContent = s.name;
-    document.getElementById('modal-roll').textContent  = s.roll_number || '-';
-    document.getElementById('m_name').value            = s.name;
-    document.getElementById('m_batch_code').value      = s.batch_code || '';
-    document.getElementById('m_father_name').value     = s.father_name || '';
-    document.getElementById('m_mother_name').value     = s.mother_name || '';
-    document.getElementById('m_dob').value             = s.dob || '';
-    document.getElementById('m_gender').value          = s.gender || 'Male';
-    document.getElementById('m_address').value         = s.address || '';
-    document.getElementById('m_qualifications').value  = s.qualifications || '';
-    document.getElementById('m_aadhaar').value         = s.aadhaar || '';
-    document.getElementById('m_course_name').value     = s.course_name;
-    document.getElementById('m_scheme').value          = s.scheme || '';
-    document.getElementById('m_nsqf').value            = s.nsqf || '';
-    document.getElementById('m_course_hour').value     = s.course_hour;
-    document.getElementById('m_fee').value             = s.fee;
-    document.getElementById('m_fee_date').value        = s.fee_date || '';
-    document.getElementById('m_center').value          = s.center_name;
-    document.getElementById('m_mode').value            = s.mode;
-    document.getElementById('m_caste').value           = s.caste_category;
-    document.getElementById('m_session').value         = s.session;
-    
-    // Split session into month/year
-    if (s.session) {
-        const parts = s.session.split('-');
-        if (parts.length === 2) {
-            document.getElementById('m_session_month').value = parts[0];
-            document.getElementById('m_session_year').value = parts[1];
-        }
-    } else {
-        document.getElementById('m_session_month').value = '';
-        document.getElementById('m_session_year').value = '';
     }
-    document.getElementById('m_trained').value         = s.trained   ? 'true' : 'false';
-    document.getElementById('m_certified').value       = s.certified ? 'true' : 'false';
-    document.getElementById('m_placed').value          = s.placed    ? 'true' : 'false';
-    document.getElementById('m_claimed').value         = s.claimed   ? 'true' : 'false';
-    document.getElementById('m_category_display').textContent = s.course_category;
 
-    document.getElementById('editModal').style.display = 'flex';
-}
+    function openEditModal(i) {
+        editingIndex = i;
+        const s = currentData[i];
 
-function closeEditModal() {
-    document.getElementById('editModal').style.display = 'none';
-    editingIndex = null;
-}
+        document.getElementById("modal-title").textContent = s.name;
+        document.getElementById("modal-roll").textContent =
+            s.roll_number || "-";
+        document.getElementById("m_name").value = s.name;
+        document.getElementById("m_batch_code").value = s.batch_code || "";
+        document.getElementById("m_father_name").value = s.father_name || "";
+        document.getElementById("m_mother_name").value = s.mother_name || "";
+        document.getElementById("m_dob").value = s.dob || "";
+        document.getElementById("m_gender").value = s.gender || "Male";
+        document.getElementById("m_address").value = s.address || "";
+        document.getElementById("m_qualifications").value =
+            s.qualifications || "";
+        document.getElementById("m_aadhaar").value = s.aadhaar || "";
+        document.getElementById("m_course_name").value = s.course_name;
+        document.getElementById("m_scheme").value = s.scheme || "";
+        document.getElementById("m_nsqf").value = s.nsqf || "";
+        document.getElementById("m_course_hour").value = s.course_hour;
+        document.getElementById("m_fee").value = s.fee;
+        document.getElementById("m_fee_date").value = s.fee_date || "";
+        document.getElementById("m_center").value = s.center_name;
+        document.getElementById("m_mode").value = s.mode;
+        document.getElementById("m_caste").value = s.caste_category;
+        document.getElementById("m_session").value = s.session;
 
-function saveModal() {
-    const s = currentData[editingIndex];
-    const payload = {
-        name:           document.getElementById('m_name').value.trim(),
-        batch_code:     document.getElementById('m_batch_code').value.trim().toUpperCase(),
-        father_name:    document.getElementById('m_father_name').value.trim(),
-        mother_name:    document.getElementById('m_mother_name').value.trim(),
-        dob:            document.getElementById('m_dob').value,
-        gender:         document.getElementById('m_gender').value,
-        address:        document.getElementById('m_address').value.trim(),
-        qualifications: document.getElementById('m_qualifications').value.trim(),
-        aadhaar:        document.getElementById('m_aadhaar').value.trim(),
-        course_name:    document.getElementById('m_course_name').value.trim(),
-        scheme:         document.getElementById('m_scheme').value.trim(),
-        nsqf:           document.getElementById('m_nsqf').value.trim(),
-        course_hour:    parseInt(document.getElementById('m_course_hour').value),
-        fee:            parseFloat(document.getElementById('m_fee').value),
-        center_name:    document.getElementById('m_center').value,
-        mode:           document.getElementById('m_mode').value,
-        caste_category: document.getElementById('m_caste').value,
-        fee_date:       document.getElementById('m_fee_date').value,
-        session:        (document.getElementById('m_session_month').value + '-' + document.getElementById('m_session_year').value).trim(),
-        trained:        document.getElementById('m_trained').value   === 'true',
-        certified:      document.getElementById('m_certified').value === 'true',
-        placed:         document.getElementById('m_placed').value    === 'true',
-        claimed:        document.getElementById('m_claimed').value   === 'true',
+        // Split session into month/year
+        if (s.session) {
+            const parts = s.session.split("-");
+            if (parts.length === 2) {
+                document.getElementById("m_session_month").value = parts[0];
+                document.getElementById("m_session_year").value = parts[1];
+            }
+        } else {
+            document.getElementById("m_session_month").value = "";
+            document.getElementById("m_session_year").value = "";
+        }
+        document.getElementById("m_trained").value = s.trained
+            ? "true"
+            : "false";
+        document.getElementById("m_certified").value = s.certified
+            ? "true"
+            : "false";
+        document.getElementById("m_placed").value = s.placed ? "true" : "false";
+        document.getElementById("m_claimed").value = s.claimed
+            ? "true"
+            : "false";
+        document.getElementById("m_category_display").textContent =
+            s.course_category;
+
+        document.getElementById("editModal").style.display = "flex";
+    }
+
+    function closeEditModal() {
+        document.getElementById("editModal").style.display = "none";
+        editingIndex = null;
+    }
+
+    function saveModal() {
+        const s = currentData[editingIndex];
+        const payload = {
+            name: document.getElementById("m_name").value.trim(),
+            batch_code: document
+                .getElementById("m_batch_code")
+                .value.trim()
+                .toUpperCase(),
+            father_name: document.getElementById("m_father_name").value.trim(),
+            mother_name: document.getElementById("m_mother_name").value.trim(),
+            dob: document.getElementById("m_dob").value,
+            gender: document.getElementById("m_gender").value,
+            address: document.getElementById("m_address").value.trim(),
+            qualifications: document
+                .getElementById("m_qualifications")
+                .value.trim(),
+            aadhaar: document.getElementById("m_aadhaar").value.trim(),
+            course_name: document.getElementById("m_course_name").value.trim(),
+            scheme: document.getElementById("m_scheme").value.trim(),
+            nsqf: document.getElementById("m_nsqf").value.trim(),
+            course_hour: parseInt(
+                document.getElementById("m_course_hour").value,
+            ),
+            fee: parseFloat(document.getElementById("m_fee").value),
+            center_name: document.getElementById("m_center").value,
+            mode: document.getElementById("m_mode").value,
+            caste_category: document.getElementById("m_caste").value,
+            fee_date: document.getElementById("m_fee_date").value,
+            session: (
+                document.getElementById("m_session_month").value +
+                "-" +
+                document.getElementById("m_session_year").value
+            ).trim(),
+            trained: document.getElementById("m_trained").value === "true",
+            certified: document.getElementById("m_certified").value === "true",
+            placed: document.getElementById("m_placed").value === "true",
+            claimed: document.getElementById("m_claimed").value === "true",
+        };
+
+        fetch(`/update-student/${s.id}/`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRFToken": getCookie("csrftoken"),
+            },
+            body: JSON.stringify(payload),
+        })
+            .then((res) => {
+                if (!res.ok) {
+                    return res.text().then((text) => {
+                        throw new Error(
+                            `HTTP ${res.status}: ${text.slice(0, 200)}`,
+                        );
+                    });
+                }
+                return res.json();
+            })
+            .then((resp) => {
+                if (resp.success) {
+                    currentData[editingIndex] = {
+                        ...currentData[editingIndex],
+                        ...payload,
+                        course_category: resp.course_category,
+                        claimable_amount: resp.claimable_amount,
+                        trained_date: resp.trained_date,
+                        certified_date: resp.certified_date,
+                        claimed: resp.claimed,
+                    };
+                    document.getElementById(`row-${editingIndex}`).outerHTML =
+                        displayRow(currentData[editingIndex], editingIndex);
+                    closeEditModal();
+                } else {
+                    alert("Save failed: " + (resp.error || "Unknown error"));
+                }
+            })
+            .catch((err) => {
+                console.error("Update student failed", err);
+                alert("Update failed: " + err.message);
+            });
+    }
+
+    function getCookie(name) {
+        const match = document.cookie.match(
+            new RegExp("(^| )" + name + "=([^;]+)"),
+        );
+        return match ? match[2] : "";
+    }
+
+    function clearFilters() {
+        [
+            "centerFilter",
+            "modeFilter",
+            "casteFilter",
+            "trainedFilter",
+            "certifiedFilter",
+            "placedFilter",
+            "claimedFilter",
+            "schemeFilter",
+            "nsqfFilter",
+            "quarterlyFilter",
+            "yearFilter",
+            "searchInput",
+        ].forEach((id) => (document.getElementById(id).value = ""));
+        currentPage = 1;
+        currentLimit = 10;
+        filterStudents();
+    }
+
+    [
+        "centerFilter",
+        "modeFilter",
+        "casteFilter",
+        "trainedFilter",
+        "certifiedFilter",
+        "placedFilter",
+        "claimedFilter",
+        "schemeFilter",
+        "nsqfFilter",
+        "quarterlyFilter",
+        "yearFilter",
+    ].forEach((id) =>
+        document.getElementById(id).addEventListener("change", () => {
+            currentPage = 1; // Reset to first page when filters change
+            filterStudents();
+        }),
+    );
+
+    window.onload = () => {
+        currentPage = 1;
+        currentLimit = 10;
+        filterStudents();
     };
 
-    fetch(`/update-student/${s.id}/`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRFToken': getCookie('csrftoken'),
-        },
-        body: JSON.stringify(payload),
-    })
-    .then(res => {
-        if (!res.ok) {
-            return res.text().then(text => {
-                throw new Error(`HTTP ${res.status}: ${text.slice(0, 200)}`);
-            });
-        }
-        return res.json();
-    })
-    .then(resp => {
-        if (resp.success) {
-            currentData[editingIndex] = {
-                ...currentData[editingIndex],
-                ...payload,
-                course_category:  resp.course_category,
-                claimable_amount: resp.claimable_amount,
-                trained_date:     resp.trained_date,
-                certified_date:   resp.certified_date,
-                claimed:          resp.claimed,
-            };
-            document.getElementById(`row-${editingIndex}`).outerHTML =
-                displayRow(currentData[editingIndex], editingIndex);
-            closeEditModal();
+    let sortField = null;
+    let sortAsc = true;
+
+    function sortTable(field) {
+        if (sortField === field) {
+            sortAsc = !sortAsc;
         } else {
-            alert('Save failed: ' + (resp.error || 'Unknown error'));
+            sortField = field;
+            sortAsc = true;
         }
-    })
-    .catch(err => {
-        console.error('Update student failed', err);
-        alert('Update failed: ' + err.message);
-    });
-}
 
-function getCookie(name) {
-    const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
-    return match ? match[2] : '';
-}
+        // clear all arrows
+        document
+            .querySelectorAll("th span")
+            .forEach((el) => (el.textContent = ""));
 
-function clearFilters() {
-    ["centerFilter","modeFilter","casteFilter","trainedFilter",
-     "certifiedFilter","placedFilter","claimedFilter","schemeFilter","nsqfFilter","quarterlyFilter","yearFilter", "searchInput"]
-        .forEach(id => document.getElementById(id).value = "");
-    currentPage = 1;
-    currentLimit = 10;
-    filterStudents();
-}
+        // set arrow
+        const arrow = sortAsc ? "▲" : "▼";
+        const indicator = document.getElementById("sort-" + field);
+        if (indicator) indicator.textContent = arrow;
 
-["centerFilter","modeFilter","casteFilter","trainedFilter",
- "certifiedFilter","placedFilter","claimedFilter","schemeFilter","nsqfFilter","quarterlyFilter","yearFilter"]
-    .forEach(id => document.getElementById(id).addEventListener("change", () => {
-        currentPage = 1; // Reset to first page when filters change
+        // Trigger server-side sorting
+        currentPage = 1; // Reset to first page when sorting
         filterStudents();
-    }));
-
-window.onload = () => {
-    currentPage = 1;
-    currentLimit = 10;
-    filterStudents();
-};
-
-
-let sortField = null;
-let sortAsc = true;
-
-function sortTable(field) {
-    if (sortField === field) {
-        sortAsc = !sortAsc;
-    } else {
-        sortField = field;
-        sortAsc = true;
     }
+    // Trigger search as the user types
+    document
+        .getElementById("searchInput")
+        .addEventListener("input", function () {
+            const searchTerm = this.value.toLowerCase();
 
-    // clear all arrows
-    document.querySelectorAll("th span").forEach(el => el.textContent = "");
+            // Filter the existing data based on Name or Roll Number
+            const filteredData = currentData.filter((student) => {
+                const name = (student.name || "").toLowerCase();
+                const roll = (student.roll_number || "")
+                    .toString()
+                    .toLowerCase();
+                return name.includes(searchTerm) || roll.includes(searchTerm);
+            });
 
-    // set arrow
-    const arrow = sortAsc ? "▲" : "▼";
-    const indicator = document.getElementById("sort-" + field);
-    if (indicator) indicator.textContent = arrow;
-
-    // Trigger server-side sorting
-    currentPage = 1; // Reset to first page when sorting
-    filterStudents();
-}
-// Trigger search as the user types
-document.getElementById("searchInput").addEventListener("input", function() {
-    const searchTerm = this.value.toLowerCase();
-    
-    // Filter the existing data based on Name or Roll Number
-    const filteredData = currentData.filter(student => {
-        const name = (student.name || "").toLowerCase();
-        const roll = (student.roll_number || "").toString().toLowerCase();
-        return name.includes(searchTerm) || roll.includes(searchTerm);
-    });
-
-    // Re-render the table with results
-    renderTable(filteredData);
-});
-function clearFilters() {
-    ["centerFilter","modeFilter","casteFilter","trainedFilter",
-     "certifiedFilter","placedFilter","claimedFilter","schemeFilter","nsqfFilter","quarterlyFilter","yearFilter", "searchInput"]
-        .forEach(id => document.getElementById(id).value = "");
-    filterStudents();
-}
+            // Re-render the table with results
+            renderTable(filteredData);
+        });
+    function clearFilters() {
+        [
+            "centerFilter",
+            "modeFilter",
+            "casteFilter",
+            "trainedFilter",
+            "certifiedFilter",
+            "placedFilter",
+            "claimedFilter",
+            "schemeFilter",
+            "nsqfFilter",
+            "quarterlyFilter",
+            "yearFilter",
+            "searchInput",
+        ].forEach((id) => (document.getElementById(id).value = ""));
+        filterStudents();
+    }
 </script>
 
 {% endblock content %}
