@@ -69,10 +69,10 @@
     <select id="trainedFilter">
         <option value="">All (Trained)</option>
         <option value="true">Trained</option>
-        <option value='or'>Trained/Certified</option>
+        <option value="or">Trained/Certified</option>
         <option value="false">Not Trained</option>
     </select>
-    
+
     <select id="certifiedFilter">
         <option value="">All (Certified)</option>
         <option value="true">Certified</option>
@@ -118,7 +118,7 @@
         <option value="Q3">Q3</option>
         <option value="Q4">Q4</option>
     </select>
-    
+
     <div style="display: flex">
         <button
             onclick="clearFilters()"
@@ -136,7 +136,7 @@
             style="width: 300px; display: inline-block; margin-right: 10px"
         />
         <button
-            onclick="clearFilters()"
+            onclick="filterStudents()"
             class="clear-btn"
             style="background-color: blue"
         >
@@ -501,6 +501,25 @@
     let currentPage = 1;
     let currentLimit = 10;
     let currentPagination = null;
+    let editingIndex = null;
+    let sortField = null;
+    let sortAsc = true;
+
+    // ─── Quarter helpers ──────────────────────────────────────────────────────
+
+    const QUARTER_MONTHS = {
+        Q1: ["APR", "MAY", "JUN"],
+        Q2: ["JUL", "AUG", "SEP"],
+        Q3: ["OCT", "NOV", "DEC"],
+        Q4: ["JAN", "FEB", "MAR"],
+    };
+
+    function dateInQuarter(dateStr, months) {
+        if (!dateStr) return false;
+        return months.includes(dateStr.split("-")[0].toUpperCase());
+    }
+
+    // ─── Fetch & render ───────────────────────────────────────────────────────
 
     function filterStudents() {
         const center = document.getElementById("centerFilter").value;
@@ -514,7 +533,6 @@
         const nsqf = document.getElementById("nsqfFilter").value;
         const quarterly = document.getElementById("quarterlyFilter").value;
         const year = document.getElementById("yearFilter").value;
-
         const sortOrder = sortAsc ? "asc" : "desc";
 
         const url = `/filter-students/?center=${center}&mode=${mode}&caste=${caste}&trained=${trained}&certified=${certified}&placed=${placed}&claimed=${claimed}&scheme=${scheme}&nsqf=${nsqf}&quarterly=${quarterly}&year=${year}&page=${currentPage}&limit=${currentLimit}&sort_field=${sortField || ""}&sort_order=${sortOrder}`;
@@ -555,7 +573,7 @@
 
     function changeLimit(limit) {
         currentLimit = parseInt(limit);
-        currentPage = 1; // Reset to first page when changing limit
+        currentPage = 1;
         filterStudents();
     }
 
@@ -588,10 +606,22 @@
     }
 
     function displayRow(s, i) {
-        const trainedBadge = s.trained
+        // ── Quarter-aware badge logic ──────────────────────────────────────────
+        const activeQuarter = document.getElementById("quarterlyFilter").value;
+        const qMonths = QUARTER_MONTHS[activeQuarter] || null;
+
+        const showTrained = qMonths
+            ? dateInQuarter(s.trained_date, qMonths)
+            : s.trained;
+        const showCertified = qMonths
+            ? dateInQuarter(s.certified_date, qMonths)
+            : s.certified;
+        // ─────────────────────────────────────────────────────────────────────
+
+        const trainedBadge = showTrained
             ? `<span class="badge-yes">Yes</span><small>${s.trained_date || ""}</small>`
             : `<span class="badge-no">No</span>`;
-        const certifiedBadge = s.certified
+        const certifiedBadge = showCertified
             ? `<span class="badge-yes">Yes</span><small>${s.certified_date || ""}</small>`
             : `<span class="badge-no">No</span>`;
         const placedBadge = s.placed
@@ -623,11 +653,13 @@
         <td>${trainedBadge}</td>
         <td>${certifiedBadge}</td>
         <td>${placedBadge}</td>
-        <td>${s.session}</td>
+        <td>${s.session || "-"}</td>
         <td><button class="edit-btn" onclick="openEditModal(${i})">Edit</button></td>
         <td>${s.claimed ? '<span class="badge-yes">Claimed</span>' : '<span class="badge-no">Not claimed</span>'}</td>
         </tr>`;
     }
+
+    // ─── Edit modal ───────────────────────────────────────────────────────────
 
     function openEditModal(i) {
         editingIndex = i;
@@ -657,7 +689,6 @@
         document.getElementById("m_caste").value = s.caste_category;
         document.getElementById("m_session").value = s.session;
 
-        // Split session into month/year
         if (s.session) {
             const parts = s.session.split("-");
             if (parts.length === 2) {
@@ -668,6 +699,7 @@
             document.getElementById("m_session_month").value = "";
             document.getElementById("m_session_year").value = "";
         }
+
         document.getElementById("m_trained").value = s.trained
             ? "true"
             : "false";
@@ -691,6 +723,12 @@
 
     function saveModal() {
         const s = currentData[editingIndex];
+        const sessionMonth = document.getElementById("m_session_month").value;
+        const sessionYear = document.getElementById("m_session_year").value;
+        const sessionValue =
+            sessionMonth && sessionYear
+                ? `${sessionMonth}-${sessionYear}`
+                : (s.session || "");
         const payload = {
             name: document.getElementById("m_name").value.trim(),
             batch_code: document
@@ -717,11 +755,7 @@
             mode: document.getElementById("m_mode").value,
             caste_category: document.getElementById("m_caste").value,
             fee_date: document.getElementById("m_fee_date").value,
-            session: (
-                document.getElementById("m_session_month").value +
-                "-" +
-                document.getElementById("m_session_year").value
-            ).trim(),
+            session: sessionValue,
             trained: document.getElementById("m_trained").value === "true",
             certified: document.getElementById("m_certified").value === "true",
             placed: document.getElementById("m_placed").value === "true",
@@ -770,6 +804,8 @@
             });
     }
 
+    // ─── Utilities ────────────────────────────────────────────────────────────
+
     function getCookie(name) {
         const match = document.cookie.match(
             new RegExp("(^| )" + name + "=([^;]+)"),
@@ -797,6 +833,25 @@
         filterStudents();
     }
 
+    function sortTable(field) {
+        if (sortField === field) {
+            sortAsc = !sortAsc;
+        } else {
+            sortField = field;
+            sortAsc = true;
+        }
+        document
+            .querySelectorAll("th span")
+            .forEach((el) => (el.textContent = ""));
+        const arrow = sortAsc ? "▲" : "▼";
+        const indicator = document.getElementById("sort-" + field);
+        if (indicator) indicator.textContent = arrow;
+        currentPage = 1;
+        filterStudents();
+    }
+
+    // ─── Event listeners ──────────────────────────────────────────────────────
+
     [
         "centerFilter",
         "modeFilter",
@@ -811,49 +866,15 @@
         "yearFilter",
     ].forEach((id) =>
         document.getElementById(id).addEventListener("change", () => {
-            currentPage = 1; // Reset to first page when filters change
+            currentPage = 1;
             filterStudents();
         }),
     );
 
-    window.onload = () => {
-        currentPage = 1;
-        currentLimit = 10;
-        filterStudents();
-    };
-
-    let sortField = null;
-    let sortAsc = true;
-
-    function sortTable(field) {
-        if (sortField === field) {
-            sortAsc = !sortAsc;
-        } else {
-            sortField = field;
-            sortAsc = true;
-        }
-
-        // clear all arrows
-        document
-            .querySelectorAll("th span")
-            .forEach((el) => (el.textContent = ""));
-
-        // set arrow
-        const arrow = sortAsc ? "▲" : "▼";
-        const indicator = document.getElementById("sort-" + field);
-        if (indicator) indicator.textContent = arrow;
-
-        // Trigger server-side sorting
-        currentPage = 1; // Reset to first page when sorting
-        filterStudents();
-    }
-    // Trigger search as the user types
     document
         .getElementById("searchInput")
         .addEventListener("input", function () {
             const searchTerm = this.value.toLowerCase();
-
-            // Filter the existing data based on Name or Roll Number
             const filteredData = currentData.filter((student) => {
                 const name = (student.name || "").toLowerCase();
                 const roll = (student.roll_number || "")
@@ -861,27 +882,14 @@
                     .toLowerCase();
                 return name.includes(searchTerm) || roll.includes(searchTerm);
             });
-
-            // Re-render the table with results
             renderTable(filteredData);
         });
-    function clearFilters() {
-        [
-            "centerFilter",
-            "modeFilter",
-            "casteFilter",
-            "trainedFilter",
-            "certifiedFilter",
-            "placedFilter",
-            "claimedFilter",
-            "schemeFilter",
-            "nsqfFilter",
-            "quarterlyFilter",
-            "yearFilter",
-            "searchInput",
-        ].forEach((id) => (document.getElementById(id).value = ""));
+
+    window.onload = () => {
+        currentPage = 1;
+        currentLimit = 10;
         filterStudents();
-    }
+    };
 </script>
 
 {% endblock content %}

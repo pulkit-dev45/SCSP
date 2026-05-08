@@ -156,9 +156,13 @@
     document.addEventListener('DOMContentLoaded', function() {
         var month = document.getElementById('session_month');
         var year = document.getElementById('session_year');
+        var form = document.getElementById('student_form');
         if (month && year) {
             month.addEventListener('change', updateSessionInput);
             year.addEventListener('change', updateSessionInput);
+        }
+        if (form) {
+            form.addEventListener('submit', updateSessionInput);
         }
 
         // Add event listeners for status checkboxes

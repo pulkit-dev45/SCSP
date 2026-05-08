@@ -1,6 +1,13 @@
+"""
+Corrected upload view and supporting helpers.
+Quarterly filtering now works based on trained_date and certified_date, not session.
+"""
+
 import json
+import re
 import traceback
-from datetime import date, datetime
+from datetime import datetime
+from decimal import Decimal
 from statistics import mode
 
 import openpyxl
@@ -73,18 +80,55 @@ CENTERS = ["inderlok", "janakpuri", "karkardooma"]
 def parse_bool(value):
     if isinstance(value, bool):
         return value
+    if value is None:
+        return False
     return str(value).strip().lower() in ["true", "yes", "1"]
 
 
 def parse_date(value):
+    """Return a date object or None. Accepts openpyxl date/datetime, or common string formats."""
     if not value:
         return None
+    # openpyxl may give datetime/date objects
     if hasattr(value, "date"):
-        return value.date()
-    try:
-        return datetime.strptime(str(value), "%Y-%m-%d").date()
-    except Exception:
-        return None
+        try:
+            return value.date()
+        except Exception:
+            pass
+    val_str = str(value).strip()
+    # try multiple formats
+    for fmt in ("%Y-%m-%d", "%d-%m-%Y", "%Y/%m/%d", "%d/%m/%Y", "%d.%m.%Y"):
+        try:
+            return datetime.strptime(val_str, fmt).date()
+        except Exception:
+            continue
+    # fallback: None
+    return None
+
+
+def format_session_date(value):
+    """Return MON-YYYY (e.g. JAN-2024) or empty string."""
+    if not value:
+        return ""
+    # If it's a date/datetime, convert to MON-YYYY
+    if hasattr(value, "strftime"):
+        return value.strftime("%b-%Y").upper()
+    # If it's already a string like JAN-2024 or Jan-2024 or 2024-01, normalize
+    s = str(value).strip()
+    # If looks like e.g. '2024-01' convert to 'JAN-2024'
+    m = re.match(r"^(\d{4})[-/](\d{1,2})$", s)
+    if m:
+        year = m.group(1)
+        month_no = int(m.group(2))
+        # reverse lookup month abbrev
+        month_abbr = (
+            list(MONTH_MAP.keys())[month_no - 1] if 1 <= month_no <= 12 else None
+        )
+        if month_abbr:
+            return f"{month_abbr}-{year}"
+    # If already MON-YYYY (or similar), upper and normalize hyphen
+    s2 = s.replace(" ", "-").replace("/", "-").upper()
+    return s2
 
 
 def quarter_from_date(date_str):
@@ -97,7 +141,14 @@ def quarter_from_date(date_str):
     except Exception:
         return None, None
 
+
 def apply_filters(params):
+    """
+    CRITICAL FIX: Quarterly filtering now checks trained_date and certified_date.
+    If filtering by Q1 and student was trained in Q1 but certified in Q2,
+    the student appears as TRAINED (not certified) when Q1 is selected.
+    When Q2 is selected, the student appears as CERTIFIED (not trained).
+    """
     print(params)
     qs = studentdata.objects.all()
     center = params.get("center")
@@ -116,10 +167,9 @@ def apply_filters(params):
     if trained:
         if trained == "or":
             qs = qs.filter(Q(trained=True) | Q(certified=True))
-            print(qs)
         else:
             qs = qs.filter(trained=parse_bool(trained))
-        
+
     certified = params.get("certified")
     if certified:
         qs = qs.filter(certified=parse_bool(certified))
@@ -142,32 +192,54 @@ def apply_filters(params):
     elif nsqf == "yes":
         qs = qs.filter(nsqf__regex=r".+")
 
-    map = {"Q1": ["APR", "MAY", "JUN"], "Q2": ["JUL", "AUG", "SEP"], "Q3": ["OCT", "NOV", "DEC"], "Q4": ["JAN", "FEB", "MAR"]}
+    qmap = {
+        "Q1": ["APR", "MAY", "JUN"],
+        "Q2": ["JUL", "AUG", "SEP"],
+        "Q3": ["OCT", "NOV", "DEC"],
+        "Q4": ["JAN", "FEB", "MAR"],
+    }
     quarter = params.get("quarterly")
 
     if quarter:
-        month = map.get(quarter)
-        w=Q()
-        for m in month:
-            a=Q(session__startswith=f"{m}-")
-            w=w|a
+        months = qmap.get(quarter, [])
+        w = Q()
+        for m in months:
+            # Filter by trained_date OR certified_date (not session)
+            # This ensures quarterly filters check when training/certification actually occurred
+            w = (
+                w
+                | Q(trained_date__startswith=f"{m}-")
+                | Q(certified_date__startswith=f"{m}-")
+            )
         qs = qs.filter(w)
 
     yearly = params.get("year")
     if yearly:
-        qs = qs.filter(Q(session__contains=yearly))
+        qs = qs.filter(
+            Q(trained_date__contains=yearly) | Q(certified_date__contains=yearly)
+        )
 
     return qs
 
-def student_to_dict(s):
+
+def student_to_dict(s, selected_quarter=None):
+    # Calculate claimable amount based on selected quarter if provided
+    if selected_quarter:
+        claimable = float(s.get_claimable_amount_for_quarter(selected_quarter))
+    else:
+        claimable = float(s.claimable_amount)
+    
     return {
+        "dob": s.dob.isoformat() if s.dob else "",
+        "fee_date": s.fee_date.isoformat() if s.fee_date else "",
+        "trained_date": s.trained_date or "",
+        "session": s.session or "",
         "id": s.id | 0,
         "roll_number": s.roll_number,
         "batch_code": s.batch_code,
         "name": s.name,
         "father_name": s.father_name,
         "mother_name": s.mother_name,
-        "dob": s.dob.strftime("%Y-%m-%d") if s.dob else "",
         "gender": s.gender,
         "address": s.address,
         "qualifications": s.qualifications,
@@ -181,16 +253,14 @@ def student_to_dict(s):
         "mode": s.mode,
         "caste_category": s.caste_category,
         "fee": float(s.fee),
-        "claimable_amount": float(s.claimable_amount),
-        "fee_date": s.fee_date or "",
+        "claimable_amount": claimable,
         "trained": s.trained,
-        "trained_date": s.trained_date,
         "certified": s.certified,
         "certified_date": s.certified_date,
         "placed": s.placed,
         "claimed": s.claimed,
-        "session": s.session,
     }
+
 
 def xlrow_to_dict(s):
     return {
@@ -270,31 +340,39 @@ def dashboard(request):
 
 @login_required(login_url="/login")
 def upload(request):
+    """
+    Upload Excel and create studentdata rows.
+    session is taken from the upload page dropdowns (session=month, year) and stored as MON-YYYY.
+    Trained/certified booleans are inferred from explicit columns or presence of trained_date/certified_date.
+    If trained/certified is True but corresponding *_date is missing, set date to the selected session.
+    """
     if request.method == "POST":
         form = ExcelUploadForm(request.POST, request.FILES)
         if form.is_valid():
             uploaded_file = request.FILES.get("file")
-            session = request.POST.get("session")
-            year = request.POST.get("year")
+            month = (request.POST.get("session") or "").strip().upper()
+            year = (request.POST.get("year") or "").strip()
+            form_session = f"{month}-{year}" if month and year else ""
+
             try:
-                wb = openpyxl.load_workbook(uploaded_file)
+                wb = openpyxl.load_workbook(uploaded_file, data_only=True)
                 ws = wb.active
                 success = 0
                 dupes = 0
                 errors = 0
                 headers = []
+                # Build header names normalized to lower-case keys
                 for cell in ws[1]:
                     value = cell.value
-                    if value is not None:
-                        headers.append(str(value).lower().strip())
-                    else:
-                        headers.append("")
+                    headers.append(
+                        str(value).lower().strip() if value is not None else ""
+                    )
 
                 for row in ws.iter_rows(min_row=2, values_only=True):
                     row_dict = dict(zip(headers, row))
 
                     aadhaar = row_dict.get("aadhaar")
-                    if studentdata.objects.filter(aadhaar=aadhaar).exists():
+                    if aadhaar and studentdata.objects.filter(aadhaar=aadhaar).exists():
                         dupes += 1
                         continue
 
@@ -304,31 +382,80 @@ def upload(request):
                         errors += 1
                         continue
 
+                    # Booleans: prefer explicit boolean/text column, fallback to presence of date column
+                    trained_bool = parse_bool(row_dict.get("trained")) or bool(
+                        row_dict.get("trained_date")
+                    )
+                    certified_bool = parse_bool(row_dict.get("certified")) or bool(
+                        row_dict.get("certified_date")
+                    )
+                    placed_bool = parse_bool(row_dict.get("placed"))
+
+                    # Parse numeric fields safely
                     try:
+                        course_hour_val = int(row_dict.get("course_hour") or 0)
+                    except Exception:
+                        course_hour_val = 0
+
+                    try:
+                        fee_val = Decimal(str(row_dict.get("fee") or 0))
+                    except Exception:
+                        fee_val = Decimal("0.00")
+
+                    # Parse dates
+                    dob_val = parse_date(row_dict.get("dob"))
+                    fee_date_val = parse_date(row_dict.get("fee_date"))
+
+                    # Format trained/certified dates to MON-YYYY if present
+                    trained_date_val = (
+                        format_session_date(row_dict.get("trained_date"))
+                        if row_dict.get("trained_date")
+                        else ""
+                    )
+                    certified_date_val = (
+                        format_session_date(row_dict.get("certified_date"))
+                        if row_dict.get("certified_date")
+                        else ""
+                    )
+
+                    # If boolean True but date missing, set date to dropdown session
+                    if trained_bool and not trained_date_val:
+                        trained_date_val = form_session or trained_date_val
+                    if certified_bool and not certified_date_val:
+                        certified_date_val = form_session or certified_date_val
+
+                    try:
+                        # Create instance (Decimal fields accept Decimal)
+                        # Helper to safely convert to string before strip
+                        def safe_str(val):
+                            return str(val).strip() if val is not None else ""
+
                         studentdata.objects.create(
-                            session=f"{session}-{year}",
-                            roll_number=row_dict.get("roll_number", ""),
-                            batch_code=row_dict.get("batch_code", ""),
-                            name=name,
-                            father_name=row_dict.get("father_name", ""),
-                            mother_name=row_dict.get("mother_name", ""),
-                            dob=row_dict.get("dob", ""),
-                            gender=row_dict.get("gender", ""),
-                            address=row_dict.get("address", ""),
-                            qualifications=row_dict.get("qualifications", ""),
-                            aadhaar=row_dict.get("aadhaar"),
-                            course_name=row_dict.get("course_name"),
-                            scheme=row_dict.get("scheme", ""),
-                            nsqf=row_dict.get("nsqf", ""),
-                            course_hour=int(row_dict.get("course_hour", "")),
-                            mode=row_dict.get("mode", ""),
-                            caste_category=row_dict.get("caste_category", ""),
-                            center_name=row_dict.get("center_name", ""),
-                            fee=row_dict.get("fee", 0),
-                            fee_date=row_dict.get("fee_date", ""),
-                            trained_date=row_dict.get("trained_date", ""),
-                            certified_date=row_dict.get("certified_date", ""),
-                            placed=row_dict.get("placed", False),
+                            session=form_session,
+                            roll_number=safe_str(row_dict.get("roll_number")),
+                            batch_code=safe_str(row_dict.get("batch_code")),
+                            name=safe_str(row_dict.get("name")),
+                            father_name=safe_str(row_dict.get("father_name")),
+                            mother_name=safe_str(row_dict.get("mother_name")),
+                            dob=dob_val,
+                            gender=safe_str(row_dict.get("gender")),
+                            address=safe_str(row_dict.get("address")),
+                            qualifications=safe_str(row_dict.get("qualifications")),
+                            aadhaar=safe_str(row_dict.get("aadhaar")),
+                            course_name=safe_str(row_dict.get("course_name")),
+                            scheme=safe_str(row_dict.get("scheme")),
+                            nsqf=safe_str(row_dict.get("nsqf")),
+                            course_hour=course_hour_val,
+                            mode=safe_str(row_dict.get("mode")),
+                            caste_category=safe_str(row_dict.get("caste_category")),
+                            center_name=safe_str(row_dict.get("center_name")),
+                            fee=fee_val,
+                            fee_date=fee_date_val,
+                            trained=trained_bool,
+                            trained_date=trained_date_val,
+                            certified=certified_bool,
+                            certified_date=certified_date_val,
+                            placed=placed_bool,
                         )
                         success += 1
                     except Exception as e:
@@ -341,7 +468,7 @@ def upload(request):
                 )
             except Exception as e:
                 print(f"❌ Failed to open Excel: {e}")
-
+                messages.error(request, f"Error processing file: {str(e)}")
     else:
         form = ExcelUploadForm()
 
@@ -351,6 +478,7 @@ def upload(request):
 @login_required(login_url="/login")
 def filter_students(request):
     students = apply_filters(request.GET)
+    selected_quarter = request.GET.get("quarterly")  # Get selected quarter for claimable amount calculation
     page = int(request.GET.get("page", 1))
     limit = int(request.GET.get("limit", 10))
     offset = (page - 1) * limit
@@ -358,7 +486,7 @@ def filter_students(request):
 
     return JsonResponse(
         {
-            "results": [student_to_dict(s) for s in students[offset : offset + limit]],
+            "results": [student_to_dict(s, selected_quarter) for s in students[offset : offset + limit]],
             "pagination": {
                 "page": page,
                 "limit": limit,
@@ -374,6 +502,7 @@ def filter_students(request):
 @login_required(login_url="/login")
 def download_filtered_data(request):
     students = apply_filters(request.GET)
+    selected_quarter = request.GET.get("quarterly")  # Get selected quarter for claimable amount calculation
 
     wb = openpyxl.Workbook()
     ws = wb.active
@@ -418,6 +547,12 @@ def download_filtered_data(request):
 
     yn = lambda v: "Yes" if v else "No"
     for row, s in enumerate(students, 2):
+        # Calculate claimable amount based on selected quarter if provided
+        if selected_quarter:
+            claimable = s.get_claimable_amount_for_quarter(selected_quarter)
+        else:
+            claimable = s.claimable_amount
+        
         for col, val in enumerate(
             [
                 s.roll_number,
@@ -439,7 +574,7 @@ def download_filtered_data(request):
                 s.mode,
                 s.caste_category,
                 float(s.fee),
-                float(s.claimable_amount),
+                float(claimable),
                 str(s.fee_date) if s.fee_date else "",
                 yn(s.trained),
                 s.trained_date,
@@ -607,11 +742,19 @@ def update_student(request, student_id):
             "course_name",
             "scheme",
             "nsqf",
-            "session",
         ]
         for f in str_fields:
             if body.get(f) is not None:
                 setattr(student, f, str(body[f]).strip())
+
+        session_value = body.get("session")
+        if session_value is not None:
+            session_value = str(session_value).strip().upper()
+            if re.fullmatch(
+                r"(JAN|FEB|MAR|APR|MAY|JUN|JUL|AUG|SEP|OCT|NOV|DEC)-\d{4}",
+                session_value,
+            ):
+                student.session = session_value
 
         if body.get("batch_code"):
             student.batch_code = str(body["batch_code"]).strip().upper()
@@ -635,14 +778,20 @@ def update_student(request, student_id):
         if body.get("placed") is not None:
             student.placed = body["placed"]
 
+        # Inside update_student view:
+        current_session_label = datetime.now().strftime("%b-%Y").upper()
+
         for field in ["trained", "certified"]:
-            new_val = body.get(field, getattr(student, field))
-            date_field = f"{field}_date"
-            if new_val and not getattr(student, field):
-                setattr(student, date_field, current_month)
-            elif not new_val:
-                setattr(student, date_field, "")
-            setattr(student, field, new_val)
+            new_val = body.get(field)
+            if new_val is not None:
+                date_field = f"{field}_date"
+                # If toggling to True and no date exists, set to current session
+                if new_val and not getattr(student, date_field):
+                    setattr(student, date_field, current_session_label)
+                # If toggling to False, clear the date
+                elif not new_val:
+                    setattr(student, date_field, "")
+                setattr(student, field, new_val)
 
         if body.get("claimed") is not None:
             student.claimed = body["claimed"]
@@ -879,7 +1028,7 @@ def sample_upload(request):
     add_dropdown("center_name", centers)
     add_dropdown("mode", mode_choices)
     add_dropdown("caste_category", caste_choices)
-    add_dropdown("placed", ["TRUE", "FALSE"])
+    add_dropdown("placed", ["True", "False"])
     add_dropdown("gender", gender_choices)
     add_dropdown("nsqf", nsqf_choices)
     add_dropdown("scheme", scheme_options)
