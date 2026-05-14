@@ -1,30 +1,36 @@
-name: Django CI
+name: Django EC2 CI/CD
 
 on:
   push:
-    branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
+    branches: [ main ]
 
 jobs:
-  build:
-
+  deploy:
     runs-on: ubuntu-latest
-    strategy:
-      max-parallel: 4
-      matrix:
-        python-version: [3.14]
-
     steps:
-    - uses: actions/checkout@v4
-    - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v3
-      with:
-        python-version: ${{ matrix.python-version }}
-    - name: Install Dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install -r requirements.txt
-    - name: Run Tests
-      run: |
-        python manage.py test
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: SSH into EC2 and Deploy
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SERVER_IP }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          # This script runs INSIDE your EC2
+          script: |
+            cd ~/SCSP
+            
+            # 1. Update code
+            git pull origin main
+            
+            # 2. Sync dependencies
+            source venv/bin/activate
+            pip install -r requirements.txt
+            
+            # 3. Database & Static files
+            python manage.py migrate --noinput
+            python manage.py collectstatic --noinput
+            
+            # 4. Restart Application Server
+            sudo systemctl restart gunicorn
