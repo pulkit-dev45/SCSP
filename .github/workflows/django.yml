@@ -17,6 +17,7 @@ jobs:
       - name: Setup Python
         uses: actions/setup-python@v4
         with:
+<<<<<<< HEAD
           python-version: '3.11'
 
       - name: Install dependencies
@@ -37,6 +38,8 @@ jobs:
       - name: Deploy to EC2 via SSH
         uses: appleboy/ssh-action@v0.1.5
         with:
+=======
+>>>>>>> 3e9a2c7146cae7fbe53597d0b241051054274bdc
           host: ${{ secrets.SERVER_HOST }}
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
