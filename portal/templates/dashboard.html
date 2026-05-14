@@ -449,21 +449,17 @@
             </div>
             <div class="mfield">
                 <label>Trained</label>
-                <select id="m_trained" class="minput">
-                    <option value="false">No</option>
-                    <option value="true">
-                        Yes — date auto-set to current month
-                    </option>
-                </select>
+                <div style="display: flex; gap: 10px; align-items: center">
+                    <input type="checkbox" id="m_trained" class="form-check-input" style="width: 20px; height: 20px; margin: 0;" />
+                    <input type="date" id="m_trained_date" class="minput" style="flex: 1;" />
+                </div>
             </div>
             <div class="mfield">
                 <label>Certified</label>
-                <select id="m_certified" class="minput">
-                    <option value="false">No</option>
-                    <option value="true">
-                        Yes — date auto-set to current month
-                    </option>
-                </select>
+                <div style="display: flex; gap: 10px; align-items: center">
+                    <input type="checkbox" id="m_certified" class="form-check-input" style="width: 20px; height: 20px; margin: 0;" />
+                    <input type="date" id="m_certified_date" class="minput" style="flex: 1;" />
+                </div>
             </div>
             <div class="mfield">
                 <label>Placed</label>
@@ -516,6 +512,11 @@
 
     function dateInQuarter(dateStr, months) {
         if (!dateStr) return false;
+        const monthNum = parseInt(dateStr.split("-")[1], 10);
+        if (!isNaN(monthNum)) {
+            const MONTH_NAMES = ["", "JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
+            return months.includes(MONTH_NAMES[monthNum]);
+        }
         return months.includes(dateStr.split("-")[0].toUpperCase());
     }
 
@@ -612,10 +613,10 @@
 
         const showTrained = qMonths
             ? dateInQuarter(s.trained_date, qMonths)
-            : s.trained;
+            : !!s.trained;
         const showCertified = qMonths
             ? dateInQuarter(s.certified_date, qMonths)
-            : s.certified;
+            : !!s.certified;
         // ─────────────────────────────────────────────────────────────────────
 
         const trainedBadge = showTrained
@@ -700,12 +701,10 @@
             document.getElementById("m_session_year").value = "";
         }
 
-        document.getElementById("m_trained").value = s.trained
-            ? "true"
-            : "false";
-        document.getElementById("m_certified").value = s.certified
-            ? "true"
-            : "false";
+        document.getElementById("m_trained").checked = !!s.trained;
+        document.getElementById("m_trained_date").value = s.trained_date || "";
+        document.getElementById("m_certified").checked = !!s.certified;
+        document.getElementById("m_certified_date").value = s.certified_date || "";
         document.getElementById("m_placed").value = s.placed ? "true" : "false";
         document.getElementById("m_claimed").value = s.claimed
             ? "true"
@@ -756,8 +755,10 @@
             caste_category: document.getElementById("m_caste").value,
             fee_date: document.getElementById("m_fee_date").value,
             session: sessionValue,
-            trained: document.getElementById("m_trained").value === "true",
-            certified: document.getElementById("m_certified").value === "true",
+            trained: document.getElementById("m_trained").checked,
+            trained_date: document.getElementById("m_trained").checked ? document.getElementById("m_trained_date").value : "",
+            certified: document.getElementById("m_certified").checked,
+            certified_date: document.getElementById("m_certified").checked ? document.getElementById("m_certified_date").value : "",
             placed: document.getElementById("m_placed").value === "true",
             claimed: document.getElementById("m_claimed").value === "true",
         };
@@ -790,6 +791,8 @@
                         trained_date: resp.trained_date,
                         certified_date: resp.certified_date,
                         claimed: resp.claimed,
+                        fee_date: resp.fee_date !== undefined ? resp.fee_date : currentData[editingIndex].fee_date,
+                        dob: resp.dob !== undefined ? resp.dob : currentData[editingIndex].dob,
                     };
                     document.getElementById(`row-${editingIndex}`).outerHTML =
                         displayRow(currentData[editingIndex], editingIndex);

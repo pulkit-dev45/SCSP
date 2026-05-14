@@ -123,3 +123,8 @@ import os
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'static'),
 ]
+
+DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
+
+DATE_FORMAT = 'Y-m-d'
+DATE_INPUT_FORMATS = ['%Y-%m-%d', '%d-%m-%Y', '%Y/%m/%d', '%d/%m/%Y']

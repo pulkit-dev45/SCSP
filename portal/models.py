@@ -100,9 +100,9 @@ class studentdata(models.Model):
     claimable_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     fee_date = models.DateField(null=True, blank=True)
     trained = models.BooleanField(default=False)
-    trained_date = models.CharField(null=True, blank=True)
+    trained_date = models.DateField(null=True, blank=True)
     certified = models.BooleanField(default=False)
-    certified_date = models.CharField(null=True, blank=True)
+    certified_date = models.DateField(null=True, blank=True)
     placed = models.BooleanField(default=False)
     claimed = models.BooleanField(default=False)
 
@@ -120,34 +120,25 @@ class studentdata(models.Model):
             for keyword in ["a level", "o level", "a-level", "o-level"]
         )
 
-    def get_quarter_from_date(self, date_str):
-        """Extract quarter (Q1-Q4) from date string in format 'MMM-YYYY'
+    def get_quarter_from_date(self, date_val):
+        """Extract quarter (Q1-Q4) from a date object
         Q1: APR-JUN, Q2: JUL-SEP, Q3: OCT-DEC, Q4: JAN-MAR
         """
-        if not date_str:
+        if not date_val:
             return None
 
-        MONTH_MAP = {
-            "JAN": 1, "FEB": 2, "MAR": 3, "APR": 4, "MAY": 5, "JUN": 6,
-            "JUL": 7, "AUG": 8, "SEP": 9, "OCT": 10, "NOV": 11, "DEC": 12,
-        }
+        if not hasattr(date_val, 'month'):
+            return None
 
-        try:
-            month_str = date_str.upper().split("-")[0]
-            month = MONTH_MAP.get(month_str)
-            if not month:
-                return None
-            # Q1: APR(4)-JUN(6), Q2: JUL(7)-SEP(9), Q3: OCT(10)-DEC(12), Q4: JAN(1)-MAR(3)
-            if month in [4, 5, 6]:
-                return "Q1"
-            elif month in [7, 8, 9]:
-                return "Q2"
-            elif month in [10, 11, 12]:
-                return "Q3"
-            elif month in [1, 2, 3]:
-                return "Q4"
-        except Exception:
-            pass
+        month = date_val.month
+        if month in [4, 5, 6]:
+            return "Q1"
+        elif month in [7, 8, 9]:
+            return "Q2"
+        elif month in [10, 11, 12]:
+            return "Q3"
+        elif month in [1, 2, 3]:
+            return "Q4"
         return None
 
     def get_claimable_amount_for_quarter(self, selected_quarter):

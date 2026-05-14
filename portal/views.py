@@ -193,10 +193,10 @@ def apply_filters(params):
         qs = qs.filter(nsqf__regex=r".+")
 
     qmap = {
-        "Q1": ["APR", "MAY", "JUN"],
-        "Q2": ["JUL", "AUG", "SEP"],
-        "Q3": ["OCT", "NOV", "DEC"],
-        "Q4": ["JAN", "FEB", "MAR"],
+        "Q1": [4, 5, 6],
+        "Q2": [7, 8, 9],
+        "Q3": [10, 11, 12],
+        "Q4": [1, 2, 3],
     }
     quarter = params.get("quarterly")
 
@@ -204,19 +204,17 @@ def apply_filters(params):
         months = qmap.get(quarter, [])
         w = Q()
         for m in months:
-            # Filter by trained_date OR certified_date (not session)
-            # This ensures quarterly filters check when training/certification actually occurred
             w = (
                 w
-                | Q(trained_date__startswith=f"{m}-")
-                | Q(certified_date__startswith=f"{m}-")
+                | Q(trained_date__month=m)
+                | Q(certified_date__month=m)
             )
         qs = qs.filter(w)
 
     yearly = params.get("year")
-    if yearly:
+    if yearly and yearly.isdigit():
         qs = qs.filter(
-            Q(trained_date__contains=yearly) | Q(certified_date__contains=yearly)
+            Q(trained_date__year=int(yearly)) | Q(certified_date__year=int(yearly))
         )
 
     return qs
@@ -232,7 +230,7 @@ def student_to_dict(s, selected_quarter=None):
     return {
         "dob": s.dob.isoformat() if s.dob else "",
         "fee_date": s.fee_date.isoformat() if s.fee_date else "",
-        "trained_date": s.trained_date or "",
+        "trained_date": s.trained_date.isoformat() if s.trained_date else "",
         "session": s.session or "",
         "id": s.id | 0,
         "roll_number": s.roll_number,
@@ -256,7 +254,7 @@ def student_to_dict(s, selected_quarter=None):
         "claimable_amount": claimable,
         "trained": s.trained,
         "certified": s.certified,
-        "certified_date": s.certified_date,
+        "certified_date": s.certified_date.isoformat() if s.certified_date else "",
         "placed": s.placed,
         "claimed": s.claimed,
     }
@@ -283,8 +281,8 @@ def xlrow_to_dict(s):
         "caste_category": s.caste_category,
         "fee": float(s.fee),
         "fee_date": s.fee_date or "",
-        "trained_date": s.trained_date,
-        "certified_date": s.certified_date,
+        "trained_date": s.trained_date.isoformat() if s.trained_date else "",
+        "certified_date": s.certified_date.isoformat() if s.certified_date else "",
         "placed": s.placed,
         "claimed": s.claimed,
         "session": s.session,
@@ -406,23 +404,19 @@ def upload(request):
                     dob_val = parse_date(row_dict.get("dob"))
                     fee_date_val = parse_date(row_dict.get("fee_date"))
 
-                    # Format trained/certified dates to MON-YYYY if present
+                    # Parse trained/certified dates as proper date objects
                     trained_date_val = (
-                        format_session_date(row_dict.get("trained_date"))
-                        if row_dict.get("trained_date")
-                        else ""
+                        parse_date(row_dict.get("trained_date"))
                     )
                     certified_date_val = (
-                        format_session_date(row_dict.get("certified_date"))
-                        if row_dict.get("certified_date")
-                        else ""
+                        parse_date(row_dict.get("certified_date"))
                     )
 
-                    # If boolean True but date missing, set date to dropdown session
+                    # If boolean True but date missing, set date to today
                     if trained_bool and not trained_date_val:
-                        trained_date_val = form_session or trained_date_val
+                        trained_date_val = datetime.now().date()
                     if certified_bool and not certified_date_val:
-                        certified_date_val = form_session or certified_date_val
+                        certified_date_val = datetime.now().date()
 
                     try:
                         # Create instance (Decimal fields accept Decimal)
@@ -702,7 +696,7 @@ def api_download_data(request):
                     "session": s.session,
                     "caste_category": s.caste_category,
                     "trained_date": s.trained_date,
-                    "certified_date": s.certified_date,
+        "certified_date": s.certified_date.isoformat() if s.certified_date else "",
                     "placed": s.placed,
                     "fee": float(s.fee),
                     "claimable_amount": float(s.claimable_amount),
@@ -778,19 +772,21 @@ def update_student(request, student_id):
         if body.get("placed") is not None:
             student.placed = body["placed"]
 
-        # Inside update_student view:
-        current_session_label = datetime.now().strftime("%b-%Y").upper()
-
         for field in ["trained", "certified"]:
             new_val = body.get(field)
             if new_val is not None:
                 date_field = f"{field}_date"
-                # If toggling to True and no date exists, set to current session
-                if new_val and not getattr(student, date_field):
-                    setattr(student, date_field, current_session_label)
-                # If toggling to False, clear the date
+                # Check if an explicit date was provided in the body
+                explicit_date_str = body.get(date_field)
+                if explicit_date_str:
+                    parsed_date = parse_date(explicit_date_str)
+                    setattr(student, date_field, parsed_date)
+                elif new_val and not getattr(student, date_field):
+                    # If toggling to True and no date exists, set to today
+                    setattr(student, date_field, datetime.now().date())
                 elif not new_val:
-                    setattr(student, date_field, "")
+                    # If toggling to False, clear the date
+                    setattr(student, date_field, None)
                 setattr(student, field, new_val)
 
         if body.get("claimed") is not None:
@@ -804,6 +800,8 @@ def update_student(request, student_id):
                 "claimable_amount": float(student.claimable_amount),
                 "trained_date": student.trained_date,
                 "certified_date": student.certified_date,
+                "fee_date": student.fee_date,
+                "dob": student.dob,
                 "claimed": student.claimed,
             }
         )
@@ -824,9 +822,9 @@ def inputView(request):
         if form.is_valid():
             student = form.save(commit=False)
             if student.trained and not student.trained_date:
-                student.trained_date = student.session
+                student.trained_date = datetime.now().date()
             if student.certified and not student.certified_date:
-                student.certified_date = student.session
+                student.certified_date = datetime.now().date()
             student.save()
             return redirect("dashboard")
     else:
@@ -1055,8 +1053,8 @@ def sample_upload(request):
         "inderlok",
         "5000",
         "2024-01-10",
-        "JAN-2024",
-        "MAR-2024",
+        "2024-01-15",
+        "2024-03-20",
         "TRUE",
     ]
     sample_col = 1
